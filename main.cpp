@@ -16,8 +16,8 @@ int main()
 	osgViewer::Viewer viewer;
 	osg::ref_ptr<osg::Group> groop = new osg::Group;
 	osg::ref_ptr<osg::Group> gr = new osg::Group;
-	//gr = open_gltf("D:/temp/test_gltf/gearboxassy/GearboxAssy.gltf");
-	gr = open_gltf("D:/temp/test_gltf/tri.gltf");
+	gr = open_gltf("D:/temp/test_gltf/gearboxassy/GearboxAssy.gltf");
+	//gr = open_gltf("D:/temp/test_gltf/tri.gltf");
 	//gr = open_gltf("C:/Users/Denis/Downloads/Malice_GLTF_222/export.gltf");
 	viewer.setSceneData(gr);
 	//std::cout << "    " << std::endl << gr->getNumChildren();
