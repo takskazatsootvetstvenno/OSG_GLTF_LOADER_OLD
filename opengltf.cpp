@@ -9,9 +9,9 @@
 #include <osg/Geode>
 #include <osg/MatrixTransform>
 #include <osg/Group>
-#include <base64.c>
-#include <base64.h>
-#include <assert.h>
+//#include <base64.c>
+//#include <base64.h>
+//#include <assert.h>
 static void decode_base64_F(char *decode, unsigned int decodelen, char**ptr_to_decoder)//~
 {
 	//char *encode_out;;
