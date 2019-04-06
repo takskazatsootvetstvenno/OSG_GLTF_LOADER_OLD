@@ -9,29 +9,12 @@
 #include <osg/Geode>
 #include <osg/MatrixTransform>
 #include <osg/Group>
-//#include <base64.c>
-//#include <base64.h>
-//#include <assert.h>
-static void decode_base64_F(char *decode, unsigned int decodelen, char**ptr_to_decoder)//~
-{
-	//char *encode_out;;
-	char *decode_out;
+#include <base64.h>
+#include <base64.cpp>
 
-//	encode_out = (char*)malloc(BASE64_ENCODE_OUT_SIZE(encodelen));
-	//decode_out = ( char*)malloc(BASE64_DECODE_OUT_SIZE(decodelen));
-//	assert(encode_out);
-//	assert(decode_out);
+//#include <iostream>
 
-	//base64_encode(encode, encodelen, encode_out) == decodelen);
-	//(memcmp(encode_out, decode, decodelen) == 0);
-//	base64_decode(decode, decodelen,  decode_out);
 
-	//assert(memcmp(decode_out, encode, encodelen) == 0);
-
-	//free(encode_out);
-	//*ptr_to_decoder = (char*)decode_out;
-	//free(decode_out);
-}
 
 struct scenn
 {
@@ -127,36 +110,14 @@ cameras my_camera;
 version_of_file ver;
 std::vector<meshes> mhs;
 meshes meh;
-/*osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
-// Создать массив для хранения четырех вершин.
-osg::ref_ptr<osg::Vec3Array> v = new osg::Vec3Array;
-geom->setVertexArray(v.get());
-v->push_back(osg::Vec3(-1.f, 0.f, -1.f));
-v->push_back(osg::Vec3(1.f, 0.f, -1.f));
-v->push_back(osg::Vec3(1.f, 0.f, 1.f));
-v->push_back(osg::Vec3(-1.f, 0.f, 1.f));
-// Создать массив их четырех цветов
-osg::ref_ptr<osg::Vec4Array> c = new osg::Vec4Array;
-geom->setColorArray(c.get());
-geom->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
-c->push_back(osg::Vec4(1.f, 0.f, 0.f, 1.f));
-c->push_back(osg::Vec4(0.f, 1.f, 0.f, 1.f));
-c->push_back(osg::Vec4(1.f, 0.f, 0.f, 1.f));
-c->push_back(osg::Vec4(1.f, 1.f, 1.f, 1.f));
-// Создать массив содержащий одну нормаль.
-osg::ref_ptr<osg::Vec3Array> n = new osg::Vec3Array;
-geom->setNormalArray(n.get());
-geom->setNormalBinding(osg::Geometry::BIND_OVERALL);
-n->push_back(osg::Vec3(0.f, -1.f, 0.f));
-// Получить прямоугольник из четырех вершин, из ранее
-// подготовленных данных.
-geom->addPrimitiveSet(
-new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0, 4));
-// Добавить Geometry (Drawable) в Geode и вернуть Geode.
-osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-
-osg::ref_ptr<osg::Geode> geode2 = new osg::Geode;
-geode->addDrawable(geom.get());*/
+void decode_base64_F(char *decode, unsigned int i, char**ptr_to_decoder)//~
+{
+	std::string decoded = base64_decode(decode);
+	char* dec = new char[bufs[i].byteLength];
+	for (int j = 0; j < bufs[i].byteLength;j++)
+	dec[j] = decoded[j];
+	bufs[i].byte_file_data = dec;
+}
 void decoder_buffers(const Json::Value& val, int was = 0, int index = 0){//nodes - 0; childeren - 1; matrix - 2;mesh - 3
 	switch (val.type()) {
 	case Json::nullValue: break;
@@ -1077,18 +1038,8 @@ void read_bin_files(char* path)
 		if (bufs[i].uri[0] == 'd' &&bufs[i].uri[1] == 'a' && bufs[i].uri[2] == 't'&&bufs[i].uri[3] == 'a')
 		{
 			///дописать, если данные хранятся в jltf
-			char* buffer;//(char*)malloc(bufs[i].byteLength);
-	/*		for ( int ggg = 0; ggg < bufs[i].byteLength;ggg++)
-			{
-				buffer[ggg] = bufs[i].uri[38 + ggg];
-			}*/
-			//decode_base64_F("Zm9vYmFy", 8);
-			decode_base64_F((bufs[i].uri + 37), bufs[i].byteLength,&buffer);
-
-		//	bufs[i].byte_file_data = buffer;
-		//	memcpy(buffer, (37 + bufs[i].uri), bufs[i].byteLength);
-			bufs[i].byte_file_data = bufs[i].uri+37;
-			bufs[i].byte_file_data = buffer;
+			char* buffer=new char;//(char*)malloc(bufs[i].byteLength);
+			decode_base64_F((bufs[i].uri + 37), i, &buffer);
 		}
 		else
 		{
@@ -1097,9 +1048,9 @@ void read_bin_files(char* path)
 			if (reader.is_open()){
 				
 
-				char* buffer = (char*)malloc(bufs[i].byteLength);
+				 char* buffer = (char*)malloc(bufs[i].byteLength);
 				
-				reader.read(buffer, bufs[i].byteLength);
+				reader.read((char*)buffer, bufs[i].byteLength);
 				bufs[i].byte_file_data = buffer;
 				reader.close();
 
@@ -1283,7 +1234,7 @@ void get_position_vec3(osg::ref_ptr<osg::Vec3Array>* v,int position,int size_typ
 
 	//	c = ((b - a) / stride)*size_type;
 
-	char*temp = new char[comp_type];//если stride не задан, значит он сам вектор
+	unsigned char*temp = new unsigned char[comp_type];//если stride не задан, значит он сам вектор
 
 	float* objf = new float[size_type];
 	unsigned int *objui = new unsigned int[size_type];
@@ -1535,7 +1486,7 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group)
 }
 osg::Group* open_gltf(char* path)
 {
-	
+
 
 	osg::ref_ptr<osg::Group> group = new osg::Group;
 	group->setName("group_opa_opa");
@@ -1546,15 +1497,10 @@ osg::Group* open_gltf(char* path)
 	decoder(val);
 	read_bin_files(path);
 	add_groups_to_root(&group);
-
-
-	
-
-	
 	std::cout << '\n'; std::cout << '\n';
 	std::string cc = "";
 //	group->addChild(new osg::Geode);
-	print(group.get(), cc);
+	//print(group.get(), cc);
 
 	std::cout << '\n';
 	/*for (int i = 0; i < group->getNumChildren(); i++)
