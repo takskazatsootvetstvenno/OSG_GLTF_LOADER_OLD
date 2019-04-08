@@ -13,9 +13,6 @@
 #include <base64.cpp>
 
 //#include <iostream>
-
-
-
 struct scenn
 {
 	osg::ref_ptr<osg::Group> sc;
@@ -88,7 +85,30 @@ struct bufferViews
 	int target;
 	char* name;
 };
+struct materials
+{
+	double baseColorFactor[4];//default 1 1 1 1
+	double metallicFactor=1;//default 1
+	double emissiveFactor[3];//default 0 0 0
+	double roughnessFactor = 1;//default 1
+	bool doubleSided=false;//default false
 
+	
+	
+
+	int normalTexture_index = -1;
+	double normalTexture_scale=1;
+	int normalTexture_texCoord=0;
+
+	int baseColorTexture_index = -1;
+	int baseColorTexture_texCoord = -1;
+
+	int metallicRoughnessTexture_index = -1;
+	int metallicRoughnessTexture_texCoord = -1;
+
+	char* alphaModee = "OPAQUE";
+	char* name;
+};
 //osg::ref_ptr<osg::Geode> mesh_bank = new osg::Geode;
 //osg::ref_ptr<osg::Geode> mesh_bank = new osg::Geode;
 using namespace std;
@@ -110,6 +130,38 @@ cameras my_camera;
 version_of_file ver;
 std::vector<meshes> mhs;
 meshes meh;
+std::vector<materials> mater;
+materials my_material;
+/*osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
+// Создать массив для хранения четырех вершин.
+osg::ref_ptr<osg::Vec3Array> v = new osg::Vec3Array;
+geom->setVertexArray(v.get());
+v->push_back(osg::Vec3(-1.f, 0.f, -1.f));
+v->push_back(osg::Vec3(1.f, 0.f, -1.f));
+v->push_back(osg::Vec3(1.f, 0.f, 1.f));
+v->push_back(osg::Vec3(-1.f, 0.f, 1.f));
+// Создать массив их четырех цветов
+osg::ref_ptr<osg::Vec4Array> c = new osg::Vec4Array;
+geom->setColorArray(c.get());
+geom->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+c->push_back(osg::Vec4(1.f, 0.f, 0.f, 1.f));
+c->push_back(osg::Vec4(0.f, 1.f, 0.f, 1.f));
+c->push_back(osg::Vec4(1.f, 0.f, 0.f, 1.f));
+c->push_back(osg::Vec4(1.f, 1.f, 1.f, 1.f));
+// Создать массив содержащий одну нормаль.
+osg::ref_ptr<osg::Vec3Array> n = new osg::Vec3Array;
+geom->setNormalArray(n.get());
+geom->setNormalBinding(osg::Geometry::BIND_OVERALL);
+n->push_back(osg::Vec3(0.f, -1.f, 0.f));
+// Получить прямоугольник из четырех вершин, из ранее
+// подготовленных данных.
+geom->addPrimitiveSet(
+new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0, 4));
+// Добавить Geometry (Drawable) в Geode и вернуть Geode.
+osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+
+osg::ref_ptr<osg::Geode> geode2 = new osg::Geode;
+geode->addDrawable(geom.get());*/
 void decode_base64_F(char *decode, unsigned int i, char**ptr_to_decoder)//~
 {
 	std::string decoded = base64_decode(decode);
@@ -117,6 +169,187 @@ void decode_base64_F(char *decode, unsigned int i, char**ptr_to_decoder)//~
 	for (int j = 0; j < bufs[i].byteLength;j++)
 	dec[j] = decoded[j];
 	bufs[i].byte_file_data = dec;
+}
+void decoder_materials(const Json::Value& val, int was = 0, int index = 0){
+	switch (val.type()) {
+	case Json::nullValue: break;
+	case Json::booleanValue: break;
+	case Json::intValue:  break;
+	case Json::uintValue:  break;
+	case Json::realValue:  break;
+	case Json::stringValue:   break;
+	case Json::arrayValue: {
+							   Json::ArrayIndex size = val.size();
+							   if (size == 0){}
+							   else {
+								   for (Json::ArrayIndex i = 0; i < size; i++) {
+
+									   if (was == 0){
+
+										   //   scenna.children.push_back(i);
+										   //acces.push_back(acc);
+										   //   scenna.children.push_back(i);
+										   mater.push_back(my_material);
+										   index++;
+									   }
+									   if (was == 1){//emissiveFactor
+										   mater[index].emissiveFactor[i] = val[i].asDouble();
+									//	   acces[index].max.push_back(val[i].asLargestInt());
+									   }
+									  
+									   if (was == 4){//baseColorFactor
+
+										   // mater[index].metallicRoughnessTexture_index =
+										   mater[index].baseColorFactor[i] = val[i].asDouble();
+										   //  acces[index].min.push_back(val[i].asLargestInt());
+										 //  was = 13;
+									   }
+									   
+									   decoder_materials(val[i], was, index);
+
+
+									   //  scenna.sc = new osg::ref_ptr<osg::Group>;
+								   }
+
+
+
+							   }
+							   break;
+	}
+	case Json::objectValue: {
+								if (val.empty()){}
+								else {
+									vector<string> keys = val.getMemberNames();
+									for (size_t i = 0; i < keys.size(); i++) {
+										const string& key = keys[i];
+										if(was==0)was = 11;
+										if (key == "name")
+										{
+											//	mhs[index].NORMAL = val[key].asLargestInt();
+											mater[index].name = (char*)val[key].asCString();
+											//	nd[index].mesh.push_back(val[i].asLargestInt());
+											//cout << "type";
+							//				was = 10;
+										}
+										if (key == "alphaMode")
+										{
+											//	mhs[index].NORMAL = val[key].asLargestInt();
+											mater[index].alphaModee = (char*)val[key].asCString();
+											//	nd[index].mesh.push_back(val[i].asLargestInt());
+											//cout << "type";
+							//				was = 9;
+										}
+										if (key == "doubleSided")
+										{
+											mater[index].doubleSided = (char*)val[key].asBool();
+											//	acces[index].count = val[key].asLargestInt();
+											//	nd[index].mesh.push_back(val[i].asLargestInt());
+											//cout << "count";
+								//			was = 8;
+										}
+
+										if (key == "roughnessFactor")
+										{
+											mater[index].roughnessFactor = val[key].asDouble();
+											//	nd[index].mesh.push_back(val[i].asLargestInt());
+											//cout << "componentType";
+								//			was = 7;
+										}
+										if (key == "metallicFactor")
+										{
+											mater[index].metallicFactor = val[key].asDouble();
+											//	nd[index].mesh.push_back(val[i].asLargestInt());
+											//cout << "byteOffset";
+								//			was = 6;
+										}
+										if (key == "normalTexture")//
+										{
+											//	acces[index].bufferView = val[key].asLargestInt();
+											//	nd[index].mesh.push_back(val[i].asLargestInt());
+											//cout << "bufferView";
+											was = 5;
+										}
+										if (key == "baseColorFactor")//
+										{
+											//mhs[index].material = val[key].asLargestInt();
+											//	nd[index].mesh.push_back(val[i].asLargestInt());
+											//cout << "min";
+											was = 4;
+										}
+										if (key == "baseColorTexture")
+										{
+											//mhs[index].material = val[key].asLargestInt();
+											//	nd[index].mesh.push_back(val[i].asLargestInt());
+											//cout << "max";
+											was = 3;
+										//	decoder_materials(val[key], was, index);
+										}
+										if (key == "metallicRoughnessTexture")
+										{
+											//mhs[index].material = val[key].asLargestInt();
+											//	nd[index].mesh.push_back(val[i].asLargestInt());
+											//cout << "max";
+										//	decoder_materials(val[key], was, index);
+											was = 2;
+										}
+										if (key == "emissiveFactor")
+										{
+											//mhs[index].material = val[key].asLargestInt();
+											//	nd[index].mesh.push_back(val[i].asLargestInt());
+											//cout << "max";
+											was = 1;
+										}
+										if (key == "index")
+										{
+											if (was == 3)mater[index].baseColorTexture_index = val[key].asLargestInt();
+											if (was == 2)mater[index].metallicRoughnessTexture_index = val[key].asLargestInt();
+											if (was == 5)mater[index].normalTexture_index = val[key].asLargestInt();
+										}
+										if (key == "texCoord")
+										{
+											if (was == 5)mater[index].normalTexture_texCoord = val[key].asLargestInt();
+											if (was == 3)mater[index].baseColorTexture_texCoord = val[key].asLargestInt();
+											if (was == 2)mater[index].metallicRoughnessTexture_texCoord = val[key].asLargestInt();
+										}
+										{
+											if (key == "scale")
+											if(was==5)mater[index].normalTexture_scale = val[key].asLargestInt();
+										}
+										/*if (was == 2){//metallicRoughnessTexture
+											//if (key == "index")
+											if (key == "texCoord")
+											was = 12;
+										}
+										if (was == 3){//baseColorTexture
+											if (key == "index")
+												mater[index].baseColorTexture_index = val[key].asLargestInt();
+											if (key == "texCoord")
+												mater[index].baseColorTexture_texCoord = val[key].asLargestInt();
+
+											// mater[index].metallicRoughnessTexture_index =
+											//  acces[index].min.push_back(val[i].asLargestInt());
+											was = 13;
+										}*/
+										//if (was == 5){//normalTexture
+										//	if (key == "index")
+												
+										//	if (key == "texCoord")
+						
+											// mater[index].metallicRoughnessTexture_index =
+
+											//  acces[index].min.push_back(val[i].asLargestInt());
+										//	was = 15;
+										//}
+										decoder_materials(val[key], was, index);
+
+									}
+								}
+								break;
+	}
+	default:
+		cerr << "Wrong type!" << endl;
+		exit(0);
+	}
 }
 void decoder_buffers(const Json::Value& val, int was = 0, int index = 0){//nodes - 0; childeren - 1; matrix - 2;mesh - 3
 	switch (val.type()) {
@@ -867,6 +1100,12 @@ void decoder(const Json::Value& val) {
 											//						decoder_meshes(val[key], 0, -1);
 											decoder_buffers(val[key], 0, -1);
 										}
+										if (key == "materials")
+										{
+											cout << "materials\n";
+											//						decoder_meshes(val[key], 0, -1);
+											decoder_materials(val[key], 0, -1);
+										}
 									}
 								}
 								break;
@@ -1004,11 +1243,18 @@ void print(osg::ref_ptr<osg::Node> nod, std::string s)
 	if (nod->asGroup() != NULL && nod->getName() != "geode")
 	for (int i = 0; i < nod->asGroup()->getNumChildren(); i++)
 	{
-
 		std::cout << s << "Group: " << nod->asGroup()->getChild(i) << "\n";
 		s.push_back(' ');
 		print(nod->asGroup()->getChild(i), s);
 	}
+	if (nod->asTransform() != NULL)
+	for (int i = 0; i < nod->asTransform()->getNumChildren(); i++)
+	{
+		std::cout << s << "MatrixTransform: " << nod->asTransform()->getChild(i) << "\n";
+		s.push_back('-');
+		print(nod->asTransform()->getChild(i), s);
+	}
+	
 	//cout << " asgeode: " << nod->asGeode();
 	//if (nod->asGeode() != NULL)
 	if (nod->getName() == "geode")
@@ -1186,6 +1432,101 @@ void get_scalar(vector<unsigned int>* v, int position, int size_type = 3)//по�
 	}
 	delete temp; delete objui; delete objus; delete objs; delete objuc; delete objc;
 }
+void get_position_vec2(osg::ref_ptr<osg::Vec2Array>* v, int position, int size_type = 3)//получение координат
+{
+	unsigned long int a = 0;//начало
+	unsigned long int b = 0;//конец
+	int comp_type = 4;
+	//int size_type = 3;
+
+	unsigned int stride = 0;
+	stride = bufvs[acces[position].bufferView].byteStride;
+	a += bufvs[acces[position].bufferView].byteOffset;
+	b = bufvs[acces[position].bufferView].byteLength + a;
+	a += acces[position].byteOffset;
+	/*if (acces[position].type[0] == 'S' && acces[position].type[1] == 'C'&& acces[position].type[2] == 'A'&& acces[position].type[3] == 'L'&& acces[position].type[4] == 'A'&&acces[position].type[5] == 'R')size_type = 1;
+	if (acces[position].type[0] == 'V'&&acces[position].type[1] == 'E'&&acces[position].type[2] == 'C' && acces[position].type[3] == '2')size_type = 2;
+	if (acces[position].type[0] == 'V'&&acces[position].type[1] == 'E'&&acces[position].type[2] == 'C' && acces[position].type[3] == '3')size_type = 3;
+	if (acces[position].type[0] == 'V'&&acces[position].type[1] == 'E'&&acces[position].type[2] == 'C' && acces[position].type[3] == '4')size_type = 4;
+	if (acces[position].type[0] == 'M'&&acces[position].type[1] == 'A'&&acces[position].type[2] == 'T' && acces[position].type[3] == '2')size_type = 4;
+	if (acces[position].type[0] == 'M'&&acces[position].type[1] == 'A'&&acces[position].type[2] == 'T' && acces[position].type[3] == '3')size_type = 9;
+	if (acces[position].type[0] == 'M'&&acces[position].type[1] == 'A'&&acces[position].type[2] == 'T' && acces[position].type[3] == '4')size_type = 16;
+	*/
+	switch (acces[position].componentType)
+	{
+	case 5126://FLOAT 4
+		comp_type = 4;
+		break;
+	case 5125://UNSIGNED_INT 4
+		comp_type = 4;
+		break;
+	case 5123://UNSIGNED_SHORT 2
+		comp_type = 2;
+		break;
+	case 5122://SHORT 2
+		comp_type = 2;
+		break;
+	case 5121://UNSIGNED_BYTE 1
+		comp_type = 1;
+	case 5120://BYTE 1
+		comp_type = 1;
+		break;
+	default:
+		cout << "COMP_TYPE? uses 4byte";
+		break;
+	}
+	unsigned long int c;
+	if (stride == 0)stride = size_type*comp_type;
+
+	//	c = ((b - a) / stride)*size_type;
+
+	unsigned char*temp = new unsigned char[comp_type];//если stride не задан, значит он сам вектор
+
+	float* objf = new float[size_type];
+	unsigned int *objui = new unsigned int[size_type];
+	short *objs = new short[size_type];
+	unsigned char *objuc = new unsigned char[size_type];
+	unsigned short *objus = new unsigned short[size_type];
+	char *objc = new char[size_type];
+	for (int i = 0; i < acces[position].count*size_type + 1; i++)
+	{
+		b = a + comp_type*size_type;//a-b  a-b  a-b
+		//if (i%comp_type == 0 &&i!=0){
+
+
+		if (i%size_type == 0 && i != 0){//фигня
+			switch (acces[position].componentType)
+			{
+				//osg::Vec3ui(objui[0], objui[1], objui[2])
+			case 5126:(*v)->push_back(osg::Vec2(objf[0], objf[1])); break;
+			case 5125:(*v)->push_back(osg::Vec2(objui[0], objui[1])); break;
+			case 5123:(*v)->push_back(osg::Vec2(objus[0], objus[1])); break;
+			default:
+				(*v)->push_back(osg::Vec2f(objf[0], objf[1]));
+				break;
+			}
+			//(*v)->push_back(osg::Vec3f(objf[0], objf[1], objf[2]));
+			a += stride;//сдвиг
+		}
+		for (int j = 0; j < comp_type; j++)
+		{
+			temp[j] = bufs[bufvs[acces[position].bufferView].buffer].byte_file_data[a + (i%size_type)*comp_type + j];
+		}
+		if (acces[position].componentType == 5126){
+			objf[i%size_type] = ((float*)temp)[0];
+		}
+		if (acces[position].componentType == 5125)//доделать для остальных типов
+			objui[i%size_type] = ((unsigned int*)temp)[0];
+		if (acces[position].componentType == 5123)
+			objus[i%size_type] = ((unsigned short*)temp)[0];
+		if (acces[position].componentType == 5122)
+			objs[i%size_type] = ((unsigned short*)temp)[0];
+		if (acces[position].componentType == 5121)
+			objuc[i%size_type] = ((unsigned char*)temp)[0];
+		if (acces[position].componentType == 5123)
+			objc[i%size_type] = ((char*)temp)[0];
+	}
+}
 void get_position_vec3(osg::ref_ptr<osg::Vec3Array>* v,int position,int size_type=3)//получение координат
 {
 	unsigned long int a=0;//начало
@@ -1280,6 +1621,93 @@ void get_position_vec3(osg::ref_ptr<osg::Vec3Array>* v,int position,int size_typ
 				objc[i%size_type] = ((char*)temp)[0];
 	}
 }
+void get_position_vec4(osg::ref_ptr<osg::Vec4Array>* v, int position, int size_type = 4)//получение координат
+{
+	unsigned long int a = 0;//начало
+	unsigned long int b = 0;//конец
+	int comp_type = 4;
+	//int size_type = 3;
+
+	unsigned int stride = 0;
+	stride = bufvs[acces[position].bufferView].byteStride;
+	a += bufvs[acces[position].bufferView].byteOffset;
+	b = bufvs[acces[position].bufferView].byteLength + a;
+	a += acces[position].byteOffset;
+	switch (acces[position].componentType)
+	{
+	case 5126://FLOAT 4
+		comp_type = 4;
+		break;
+	case 5125://UNSIGNED_INT 4
+		comp_type = 4;
+		break;
+	case 5123://UNSIGNED_SHORT 2
+		comp_type = 2;
+		break;
+	case 5122://SHORT 2
+		comp_type = 2;
+		break;
+	case 5121://UNSIGNED_BYTE 1
+		comp_type = 1;
+	case 5120://BYTE 1
+		comp_type = 1;
+		break;
+	default:
+		cout << "COMP_TYPE? uses 4byte";
+		break;
+	}
+	unsigned long int c;
+	if (stride == 0)stride = size_type*comp_type;
+
+	//	c = ((b - a) / stride)*size_type;
+
+	unsigned char*temp = new unsigned char[comp_type];//если stride не задан, значит он сам вектор
+
+	float* objf = new float[size_type];
+	unsigned int *objui = new unsigned int[size_type];
+	short *objs = new short[size_type];
+	unsigned char *objuc = new unsigned char[size_type];
+	unsigned short *objus = new unsigned short[size_type];
+	char *objc = new char[size_type];
+	for (int i = 0; i < acces[position].count*size_type + 1; i++)
+	{
+		b = a + comp_type*size_type;//a-b  a-b  a-b
+		//if (i%comp_type == 0 &&i!=0){
+
+
+		if (i%size_type == 0 && i != 0){//фигня
+			switch (acces[position].componentType)
+			{
+				//osg::Vec3ui(objui[0], objui[1], objui[2])
+			case 5126:(*v)->push_back(osg::Vec4(objf[0], objf[1], objf[2], objf[3])); break;
+			case 5125:(*v)->push_back(osg::Vec4(objui[0], objui[1], objui[2], objui[3])); break;
+			case 5123:(*v)->push_back(osg::Vec4(objus[0], objus[1], objus[2], objus[3])); break;
+			default:
+				(*v)->push_back(osg::Vec4f(objf[0], objf[1], objf[2], objf[3]));
+				break;
+			}
+			//(*v)->push_back(osg::Vec3f(objf[0], objf[1], objf[2]));
+			a += stride;//сдвиг
+		}
+		for (int j = 0; j < comp_type; j++)
+		{
+			temp[j] = bufs[bufvs[acces[position].bufferView].buffer].byte_file_data[a + (i%size_type)*comp_type + j];
+		}
+		if (acces[position].componentType == 5126){
+			objf[i%size_type] = ((float*)temp)[0];
+		}
+		if (acces[position].componentType == 5125)//доделать для остальных типов
+			objui[i%size_type] = ((unsigned int*)temp)[0];
+		if (acces[position].componentType == 5123)
+			objus[i%size_type] = ((unsigned short*)temp)[0];
+		if (acces[position].componentType == 5122)
+			objs[i%size_type] = ((unsigned short*)temp)[0];
+		if (acces[position].componentType == 5121)
+			objuc[i%size_type] = ((unsigned char*)temp)[0];
+		if (acces[position].componentType == 5123)
+			objc[i%size_type] = ((char*)temp)[0];
+	}
+}
 void add_groups_to_root(osg::ref_ptr<osg::Group>* group)
 {
 	(*group)->addChild(scenns[0].sc.get());//scenna 0 - начало
@@ -1296,9 +1724,9 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group)
 			nd[i].matrix[0] = 1; nd[i].matrix[5] = 1; nd[i].matrix[10] = 1; nd[i].matrix[15] = 1;
 		}
 		//СДВИГ
-		nd[i].matrix[12] += nd[i].translation[0]; 
-		nd[i].matrix[13] += nd[i].translation[1];
-		nd[i].matrix[14] += nd[i].translation[2];
+		//nd[i].matrix[12] += nd[i].translation[0]; 
+		//nd[i].matrix[13] += nd[i].translation[1];
+		//nd[i].matrix[14] += nd[i].translation[2];
 
 		if (nd[i].mesh != -1)
 		{
@@ -1317,27 +1745,29 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group)
 			MT->setMatrix(m);
 			nd[i].gr->addChild(MT.get());
 			MT->addChild(mhs[nd[i].mesh].mh.get());//
-			cout << "3";
+			//std::cout << "3";
 			//nd[i].translation[0];
 		}
-		if (nd[i].children.size() == 0){}
+	//	if (nd[i].children.size() == 0){}
 		//roots->addChild(nd[i].gr);
-		else
-		{
+
+		//else
+		//{
 			for (int j = 0; j < nd[i].children.size(); j++){
 				osg::ref_ptr<osg::MatrixTransform> MT = new osg::MatrixTransform;
-				osg::Matrix m1; osg::Matrix m2;
+				osg::Matrix m1;// osg::Matrix m2;
 				m1.set(nd[i].matrix);
 
 			//	for (int v = 0; v < 16; v++)
 			//		cout << m1(v / 4, v % 4) << "  " << nd[i].matrix[v]<<endl;
 
-				m2.set(nd[nd[i].children[j]].matrix);
+			//	m2.set(nd[nd[i].children[j]].matrix);
+			//	osg::Matrix resultMat = m1 * m2;
 
 				MT->setMatrix(m1);
 				nd[i].gr->addChild(MT.get());
 				MT->addChild(nd[nd[i].children[j]].gr.get());
-				osg::Matrix resultMat = m2 * m1;
+				
 
 				//nd[nd[i].children[j]].matrix = resultMat.;///////!!!!//////
 			//	for (int v = 0; v < 16; v++)
@@ -1355,7 +1785,7 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group)
 
 				//nd[i].gr->addChild(nd[nd[i].children[j]].gr.get());
 			//	nd[nd[i].children[j]].gr->setName("geode");
-			}
+	//		}
 		}
 	}
 	for (int i = 0; i < scenns.size(); i++)//scenes
@@ -1374,13 +1804,21 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group)
 		osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
 		vector<unsigned int> ii;////
 			int size_type = 4;
-			int position = 0; position = mhs[i].POSITION;
+			int position; position = mhs[i].POSITION;
 
 		//	osg::ref_ptr<osg::Vec3Array> v = new osg::Vec3Array;
 			if (acces[position].type[0] == 'S' && acces[position].type[1] == 'C'&& acces[position].type[2] == 'A'&& acces[position].type[3] == 'L'&& acces[position].type[4] == 'A'&&acces[position].type[5] == 'R'){
 			
 			}
-		if (acces[position].type[0] == 'V'&&acces[position].type[1] == 'E'&&acces[position].type[2] == 'C' && acces[position].type[3] == '2')size_type = 2;
+			if (acces[position].type[0] == 'V'&&acces[position].type[1] == 'E'&&acces[position].type[2] == 'C' && acces[position].type[3] == '2'){
+				size_type = 2;
+				osg::ref_ptr<osg::Vec2Array> v = new osg::Vec2Array;
+				//	geom->setVertexArray(v.get());
+				get_position_vec2(&v, position, size_type);
+				//geom->setVertexAttribBinding();
+				geom->setVertexArray(v.get());//coord->geom
+				cout << "P_R\n";
+			}
 		if (acces[position].type[0] == 'V'&&acces[position].type[1] == 'E'&&acces[position].type[2] == 'C' && acces[position].type[3] == '3'){
 			size_type = 3;
 			osg::ref_ptr<osg::Vec3Array> v = new osg::Vec3Array; 
@@ -1390,18 +1828,36 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group)
 			geom->setVertexArray(v.get());//coord->geom
 			cout << "P_R\n";
 		}
-		if (acces[position].type[0] == 'V'&&acces[position].type[1] == 'E'&&acces[position].type[2] == 'C' && acces[position].type[3] == '4')size_type = 4;
+		if (acces[position].type[0] == 'V'&&acces[position].type[1] == 'E'&&acces[position].type[2] == 'C' && acces[position].type[3] == '4'){
+			size_type = 4;
+			osg::ref_ptr<osg::Vec4Array> v = new osg::Vec4Array;
+			//	geom->setVertexArray(v.get());
+			get_position_vec4(&v, position, size_type);
+			//geom->setVertexAttribBinding();
+			geom->setVertexArray(v.get());//coord->geom
+			cout << "P_R\n";
+		}
+		
 		if (acces[position].type[0] == 'M'&&acces[position].type[1] == 'A'&&acces[position].type[2] == 'T' && acces[position].type[3] == '2')size_type = 4;
 		if (acces[position].type[0] == 'M'&&acces[position].type[1] == 'A'&&acces[position].type[2] == 'T' && acces[position].type[3] == '3')size_type = 9;
 		if (acces[position].type[0] == 'M'&&acces[position].type[1] == 'A'&&acces[position].type[2] == 'T' && acces[position].type[3] == '4')size_type = 16;
 		
 		
 		//////////////////////////////////////////////////////////////////////NORMAL INPUT
-		int normal = 0; normal = mhs[i].NORMAL;
+		int normal = -1; normal = mhs[i].NORMAL;
 		if (normal != -1){
 			if (acces[normal].type[0] == 'S' && acces[normal].type[1] == 'C'&& acces[normal].type[2] == 'A'&& acces[normal].type[3] == 'L'&& acces[normal].type[4] == 'A'&&acces[normal].type[5] == 'R')
 				size_type = 1;
-			if (acces[normal].type[0] == 'V'&&acces[normal].type[1] == 'E'&&acces[normal].type[2] == 'C' && acces[normal].type[3] == '2')size_type = 2;
+			if (acces[normal].type[0] == 'V'&&acces[normal].type[1] == 'E'&&acces[normal].type[2] == 'C' && acces[normal].type[3] == '2')if (acces[normal].type[0] == 'V'&&acces[normal].type[1] == 'E'&&acces[normal].type[2] == 'C' && acces[normal].type[3] == '4'){
+				size_type = 2;
+				osg::ref_ptr<osg::Vec2Array> n = new osg::Vec2Array;
+
+				get_position_vec2(&n, normal, size_type);
+				geom->setNormalArray(n.get());//normal_coord->geom
+				geom->setNormalBinding(osg::Geometry::BIND_PER_VERTEX);
+
+				cout << "N_R\n";
+			}
 			if (acces[normal].type[0] == 'V'&&acces[normal].type[1] == 'E'&&acces[normal].type[2] == 'C' && acces[normal].type[3] == '3'){
 				size_type = 3;
 				osg::ref_ptr<osg::Vec3Array> n = new osg::Vec3Array;
@@ -1412,14 +1868,24 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group)
 				
 				cout << "N_R\n";
 			}
-			if (acces[normal].type[0] == 'V'&&acces[normal].type[1] == 'E'&&acces[normal].type[2] == 'C' && acces[normal].type[3] == '4')size_type = 4;
+
+			if (acces[normal].type[0] == 'V'&&acces[normal].type[1] == 'E'&&acces[normal].type[2] == 'C' && acces[normal].type[3] == '4'){
+				size_type = 4;
+				osg::ref_ptr<osg::Vec4Array> n = new osg::Vec4Array;
+
+				get_position_vec4(&n, normal, size_type);
+				geom->setNormalArray(n.get());//normal_coord->geom
+				geom->setNormalBinding(osg::Geometry::BIND_PER_VERTEX);
+
+				cout << "N_R\n";
+			}
 			if (acces[normal].type[0] == 'M'&&acces[normal].type[1] == 'A'&&acces[normal].type[2] == 'T' && acces[normal].type[3] == '2')size_type = 4;
 			if (acces[normal].type[0] == 'M'&&acces[normal].type[1] == 'A'&&acces[normal].type[2] == 'T' && acces[normal].type[3] == '3')size_type = 9;
 			if (acces[normal].type[0] == 'M'&&acces[normal].type[1] == 'A'&&acces[normal].type[2] == 'T' && acces[normal].type[3] == '4')size_type = 16;
 		}
 		//////////////////////////////////////////////////////////////////////INDEX INPUT
 
-		int index = 0; index = mhs[i].indices;
+		int index=-1; index = mhs[i].indices;
 		if (index != -1){
 			if (acces[index].type[0] == 'S' && acces[index].type[1] == 'C'&& acces[index].type[2] == 'A'&& acces[index].type[3] == 'L'&& acces[index].type[4] == 'A'&&acces[index].type[5] == 'R')
 			{
@@ -1437,18 +1903,68 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group)
 			if (acces[index].type[0] == 'M'&&acces[index].type[1] == 'A'&&acces[index].type[2] == 'T' && acces[index].type[3] == '3')size_type = 9;
 			if (acces[index].type[0] == 'M'&&acces[index].type[1] == 'A'&&acces[index].type[2] == 'T' && acces[index].type[3] == '4')size_type = 16;
 		}
-		////////////////////////////////////////////////////////////////////////////
-		
+
+
+		////////////////////////////////////////////////////////////////////MATERIALS INPUT
+		int material_choose = -1; material_choose = mhs[i].material;
+		if (material_choose != -1){
+			osg::ref_ptr<osg::Vec4Array> mat_vec = new osg::Vec4Array;
+			geom->setColorArray(mat_vec.get());
+			geom->setColorBinding(osg::Geometry::BIND_OVERALL);
+			mat_vec->push_back(osg::Vec4(mater[material_choose].baseColorFactor[0], mater[material_choose].baseColorFactor[1], mater[material_choose].baseColorFactor[2], mater[material_choose].baseColorFactor[3]));
+		//	c->push_back(osg::Vec4(0.f, 1.f, 0.f, 1.f));
+		//	c->push_back(osg::Vec4(0.f, 0.f, 1.f, 1.f));
+		//	c->push_back(osg::Vec4(1.f, 1.f, 1.f, 1.f));
+		}
+		/////////////////////////////////////////////////////////////
 		if (mhs[i].indices != -1)//если есть индексы
 		{
 			switch (mhs[i].mode){//choose mode for primit.
-			case 0:geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, acces[mhs[i].POSITION].count)); break;
-			case 1:geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINES, 0, acces[mhs[i].POSITION].count)); break;
-			case 2:geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_LOOP, 0, acces[mhs[i].POSITION].count)); break;
-			case 3:geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, acces[mhs[i].POSITION].count)); break;
+			case 0:
+			{
+					  //geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, acces[mhs[i].POSITION].count)); break;
+					  osg::ref_ptr<osg::DrawElementsUInt> sideIndices = new osg::DrawElementsUInt(GL_POINTS);
+					  for (int j = 0; j < ii.size(); j++)
+						  sideIndices->push_back(ii[j]);
+					  //	osg::ref_ptr<osg::DrawElementsUInt> sideIndices =new osg::DrawElementsUInt(GL_QUAD_STRIP);
+					  //	sideIndices->
+					  geom->addPrimitiveSet(sideIndices.get());
+					  break;
+			}
+			case 1:
+			{
+					  //geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINES, 0, acces[mhs[i].POSITION].count)); break;
+					  osg::ref_ptr<osg::DrawElementsUInt> sideIndices = new osg::DrawElementsUInt(GL_LINES);
+					  for (int j = 0; j < ii.size(); j++)
+						  sideIndices->push_back(ii[j]);
+					  //	osg::ref_ptr<osg::DrawElementsUInt> sideIndices =new osg::DrawElementsUInt(GL_QUAD_STRIP);
+					  //	sideIndices->
+					  geom->addPrimitiveSet(sideIndices.get());
+					  break;
+			}
+			case 2:
+			{
+					  //geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_LOOP, 0, acces[mhs[i].POSITION].count)); 
+					  osg::ref_ptr<osg::DrawElementsUInt> sideIndices = new osg::DrawElementsUInt(GL_LINES);
+					  for (int j = 0; j < ii.size(); j++)
+						  sideIndices->push_back(ii[j]);
+					  //	osg::ref_ptr<osg::DrawElementsUInt> sideIndices =new osg::DrawElementsUInt(GL_QUAD_STRIP);
+					  //	sideIndices->
+					  geom->addPrimitiveSet(sideIndices.get());
+					  break;
+			}
+			case 3:{
+					   //geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, acces[mhs[i].POSITION].count)) break;
+					   osg::ref_ptr<osg::DrawElementsUInt> sideIndices = new osg::DrawElementsUInt(GL_LINE_STRIP);
+					   for (int j = 0; j < ii.size(); j++)
+						   sideIndices->push_back(ii[j]);
+					   //	osg::ref_ptr<osg::DrawElementsUInt> sideIndices =new osg::DrawElementsUInt(GL_QUAD_STRIP);
+					   //	sideIndices->
+					   geom->addPrimitiveSet(sideIndices.get());
+					   break;
+			}
 			case 4:{
 			//	geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::TRIANGLES, 0, acces[mhs[i].POSITION].count)); 
-
 				osg::ref_ptr<osg::DrawElementsUInt> sideIndices = new osg::DrawElementsUInt(GL_TRIANGLES);
 				for (int j = 0; j < ii.size(); j++)
 					sideIndices->push_back(ii[j]);
@@ -1457,8 +1973,28 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group)
 				geom->addPrimitiveSet(sideIndices.get());
 				break;
 			}
-			case 5:geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::TRIANGLE_STRIP, 0, acces[mhs[i].POSITION].count)); break;
-			case 6:geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::TRIANGLE_FAN, 0, acces[mhs[i].POSITION].count)); break;
+			case 5:
+			{
+			//		  geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::TRIANGLE_STRIP, 0, acces[mhs[i].POSITION].count)); break;
+					  osg::ref_ptr<osg::DrawElementsUInt> sideIndices = new osg::DrawElementsUInt(GL_TRIANGLE_STRIP);
+					  for (int j = 0; j < ii.size(); j++)
+						  sideIndices->push_back(ii[j]);
+					  //	osg::ref_ptr<osg::DrawElementsUInt> sideIndices =new osg::DrawElementsUInt(GL_QUAD_STRIP);
+					  //	sideIndices->
+					  geom->addPrimitiveSet(sideIndices.get());
+					  break;
+			}
+			case 6:
+			{
+					  //geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::TRIANGLE_FAN, 0, acces[mhs[i].POSITION].count)); break
+					  osg::ref_ptr<osg::DrawElementsUInt> sideIndices = new osg::DrawElementsUInt(GL_TRIANGLE_FAN);
+					  for (int j = 0; j < ii.size(); j++)
+						  sideIndices->push_back(ii[j]);
+					  //	osg::ref_ptr<osg::DrawElementsUInt> sideIndices =new osg::DrawElementsUInt(GL_QUAD_STRIP);
+					  //	sideIndices->
+					  geom->addPrimitiveSet(sideIndices.get());
+					  break;
+			}
 			default:cout << "??? mode????"; break;
 			}
 		}
@@ -1480,7 +2016,7 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group)
 		// Добавить Geometry (Drawable) в Geode и вернуть Geode.
 		//osg::ref_ptr<osg::Geode> geode = new osg::Geode;
 		mhs[i].mh->addDrawable(geom.get());
-		scenns[0].sc->addChild(mhs[i].mh);
+	//	scenns[0].sc->addChild(mhs[i].mh);
 		//acces[mhs[i].POSITION];
 	}
 }
