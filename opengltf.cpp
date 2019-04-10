@@ -7,11 +7,12 @@
 #include<osgDB/WriteFile>
 #include <osgDB/ReadFile>
 #include <osg/Geode>
+#include <osg/Texture2D>
 #include <osg/MatrixTransform>
+#include <osg/StateAttribute>
 #include <osg/Group>
 #include <base64.h>
 #include <base64.cpp>
-
 //#include <iostream>
 struct scenn
 {
@@ -50,6 +51,8 @@ struct meshes
 	osg::ref_ptr<osg::Geode> mh;
 	int NORMAL=-1;
 	int POSITION=-1;
+	int TEXCOORD_0 = -1;
+	int TEXCOORD_1 = -1;
 
 	int indices=-1;
 	int mode=4;
@@ -109,9 +112,35 @@ struct materials
 	char* alphaModee = "OPAQUE";
 	char* name;
 };
+struct textures
+{
+	int sampler=-1;
+	int source=-1;
+};
+struct images{
+char* uri;
+osg::ref_ptr<osg::Image> image;
+//
+
+};
+struct samplers
+{
+	int magFilter;
+	int minFilter;
+	int wrapS;
+	int wrapT;
+};
 //osg::ref_ptr<osg::Geode> mesh_bank = new osg::Geode;
 //osg::ref_ptr<osg::Geode> mesh_bank = new osg::Geode;
 using namespace std;
+std::vector<samplers> sampler;
+samplers my_sampler;
+
+std::vector<images> image;
+images my_image;
+
+std::vector<textures> texture;
+textures my_texture;
 std::vector<buffers> bufs;
 buffers my_bufs;
 
@@ -162,6 +191,196 @@ osg::ref_ptr<osg::Geode> geode = new osg::Geode;
 
 osg::ref_ptr<osg::Geode> geode2 = new osg::Geode;
 geode->addDrawable(geom.get());*/
+void decoder_samplers(const Json::Value& val, int was = 0, int index = 0){//nodes - 0; childeren - 1; matrix - 2;mesh - 3
+	switch (val.type()) {
+	case Json::nullValue: break;
+	case Json::booleanValue: break;
+	case Json::intValue:  break;
+	case Json::uintValue:  break;
+	case Json::realValue:  break;
+	case Json::stringValue:   break;
+	case Json::arrayValue: {
+							   Json::ArrayIndex size = val.size();
+							   if (size == 0){}
+							   else {
+
+								   for (Json::ArrayIndex i = 0; i < size; i++) {
+									   if (was == 0){
+										  sampler.push_back(my_sampler);
+										   index++;
+									   }
+									   decoder_samplers(val[i], was, index);
+
+								   }
+							   }
+							   break;
+	}
+	case Json::objectValue: {
+								if (val.empty()){}
+								else {
+									vector<string> keys = val.getMemberNames();
+									for (size_t i = 0; i<keys.size(); i++) {
+										const string& key = keys[i];
+										was = 9;
+										if (key == "magFilter")
+										{
+											//			ver.version = (char*)val[key].asCString();
+											sampler[index].magFilter = val[key].asLargestInt();
+											//	nd[index].mesh.push_back(val[i].asLargestInt());
+											//cout << "version";
+											was = 8;
+										}
+										if (key == "minFilter")
+										{
+											//ver.generator = (char*)val[key].asCString();
+											sampler[index].minFilter = val[key].asLargestInt();
+											//	nd[index].mesh.push_back(val[i].asLargestInt());
+											//cout << "generator";
+											was = 7;
+										}
+										if (key == "wrapS")
+										{
+											//ver.generator = (char*)val[key].asCString();
+											sampler[index].wrapS = val[key].asLargestInt();
+											//	nd[index].mesh.push_back(val[i].asLargestInt());
+											//cout << "generator";
+											was = 6;
+										}
+										if (key == "wrapT")
+										{
+											//ver.generator = (char*)val[key].asCString();
+											sampler[index].wrapT = val[key].asLargestInt();
+											//	nd[index].mesh.push_back(val[i].asLargestInt());
+											//cout << "generator";
+											was = 5;
+										}
+										decoder_samplers(val[key], was, index);
+
+									}
+								}
+								break;
+	}
+	default:
+		cerr << "Wrong type!" << endl;
+		std::exit(0);
+	}
+}
+void decoder_images(const Json::Value& val, int was = 0, int index = 0){//nodes - 0; childeren - 1; matrix - 2;mesh - 3
+	switch (val.type()) {
+	case Json::nullValue: break;
+	case Json::booleanValue: break;
+	case Json::intValue:  break;
+	case Json::uintValue:  break;
+	case Json::realValue:  break;
+	case Json::stringValue:   break;
+	case Json::arrayValue: {
+							   Json::ArrayIndex size = val.size();
+							   if (size == 0){}
+							   else {
+
+								   for (Json::ArrayIndex i = 0; i < size; i++) {
+									   if (was == 0){
+										   image.push_back(my_image);
+										   index++;
+									   }
+									   decoder_images(val[i], was, index);
+
+								   }
+							   }
+							   break;
+	}
+	case Json::objectValue: {
+								if (val.empty()){}
+								else {
+									vector<string> keys = val.getMemberNames();
+									for (size_t i = 0; i<keys.size(); i++) {
+										const string& key = keys[i];
+										was = 7;
+										if (key == "uri")
+										{
+												image[index].uri = (char*)val[key].asCString();
+											//texture[index].sampler = val[key].asLargestInt();
+											//	nd[index].mesh.push_back(val[i].asLargestInt());
+											//cout << "version";
+											was = 6;
+										}
+									/*	if (key == "source")
+										{
+											//ver.generator = (char*)val[key].asCString();
+											texture[index].source = val[key].asLargestInt();
+											//	nd[index].mesh.push_back(val[i].asLargestInt());
+											//cout << "generator";
+											was = 5;
+										}*/
+										decoder_images(val[key], was, index);
+
+									}
+								}
+								break;
+	}
+	default:
+		cerr << "Wrong type!" << endl;
+		std::exit(0);
+	}
+}
+void decoder_textures(const Json::Value& val, int was = 0, int index = 0){//nodes - 0; childeren - 1; matrix - 2;mesh - 3
+	switch (val.type()) {
+	case Json::nullValue: break;
+	case Json::booleanValue: break;
+	case Json::intValue:  break;
+	case Json::uintValue:  break;
+	case Json::realValue:  break;
+	case Json::stringValue:   break;
+	case Json::arrayValue: {
+							   Json::ArrayIndex size = val.size();
+							   if (size == 0){}
+							   else {
+
+								   for (Json::ArrayIndex i = 0; i < size; i++) {
+									   if (was == 0){
+										   texture.push_back(my_texture);
+										   index++;
+									   }
+									   decoder_textures(val[i], was, index);
+
+								   }
+							   }
+							   break;
+	}
+	case Json::objectValue: {
+								if (val.empty()){}
+								else {
+									vector<string> keys = val.getMemberNames();
+									for (size_t i = 0; i<keys.size(); i++) {
+										const string& key = keys[i];
+										was = 7;
+										if (key == "sampler")
+										{
+								//			ver.version = (char*)val[key].asCString();
+											texture[index].sampler = val[key].asLargestInt();
+											//	nd[index].mesh.push_back(val[i].asLargestInt());
+											//cout << "version";
+											was = 6;
+										}
+										if (key == "source")
+										{
+											//ver.generator = (char*)val[key].asCString();
+											texture[index].source = val[key].asLargestInt();
+											//	nd[index].mesh.push_back(val[i].asLargestInt());
+											//cout << "generator";
+											was = 5;
+										}
+										decoder_textures(val[key], was, index);
+
+									}
+								}
+								break;
+	}
+	default:
+		cerr << "Wrong type!" << endl;
+		std::exit(0);
+	}
+}
 void decode_base64_F(char *decode, unsigned int i, char**ptr_to_decoder)//~
 {
 	std::string decoded = base64_decode(decode);
@@ -651,7 +870,7 @@ void decoder_meshes(const Json::Value& val, int was = 0, int index = 0){//nodes 
 										was = 8;
 										if (key == "attributes")//ignore
 										{
-											was = 7;
+											was = 9;
 										}
 										if (key == "name")
 										{
@@ -659,6 +878,20 @@ void decoder_meshes(const Json::Value& val, int was = 0, int index = 0){//nodes 
 											mhs[index].name = (char*)val[key].asCString();
 											//	nd[index].mesh.push_back(val[i].asLargestInt());
 											//cout << "name";
+											was = 8;
+										}
+										if (key == "TEXCOORD_1")
+										{
+											mhs[index].TEXCOORD_1 = val[key].asLargestInt();
+											//	nd[index].mesh.push_back(val[i].asLargestInt());
+											//cout << "NORMAL";
+											was = 7;
+										}
+										if (key == "TEXCOORD_0")
+										{
+											mhs[index].TEXCOORD_0 = val[key].asLargestInt();
+											//	nd[index].mesh.push_back(val[i].asLargestInt());
+											//cout << "NORMAL";
 											was = 6;
 										}
 										if (key == "NORMAL")
@@ -1073,38 +1306,47 @@ void decoder(const Json::Value& val) {
 										if (key == "cameras")
 										{
 											cout << "cameras\n";
-											//						decoder_meshes(val[key], 0, -1);
 											decoder_cameras(val[key], 0, -1);
 										}
 										if (key == "asset")
 										{
 											cout << "asset\n";
-											//						decoder_meshes(val[key], 0, -1);
 											decoder_version(val[key], 0, -1);
 										}
 										if (key == "accessors")
 										{
 											cout << "asset\n";
-											//						decoder_meshes(val[key], 0, -1);
 											decoder_accessors(val[key], 0, -1);
 										}
 										if (key == "bufferViews")
 										{
 											cout << "bufferViews\n";
-											//						decoder_meshes(val[key], 0, -1);
 											decoder_bufferViews(val[key], 0, -1);
 										}
 										if (key == "buffers")
 										{
 											cout << "buffers\n";
-											//						decoder_meshes(val[key], 0, -1);
 											decoder_buffers(val[key], 0, -1);
 										}
 										if (key == "materials")
 										{
 											cout << "materials\n";
-											//						decoder_meshes(val[key], 0, -1);
 											decoder_materials(val[key], 0, -1);
+										}
+										if (key == "textures")
+										{
+											cout << "textures\n";
+											decoder_textures(val[key], 0, -1);
+										}
+										if (key == "images")
+										{
+											cout << "images\n";
+											decoder_images(val[key], 0, -1);
+										}
+										if (key == "samplers")
+										{
+											cout << "samplers\n";
+											decoder_samplers(val[key], 0, -1);
 										}
 									}
 								}
@@ -1267,6 +1509,39 @@ void print(osg::ref_ptr<osg::Node> nod, std::string s)
 	}
 
  };
+void read_image_files(char* path)
+{
+	char mypath[100];
+	
+	for (int i = 0; i < image.size(); i++)
+	{
+		memset(mypath, 0, sizeof(mypath));
+		strcpy(mypath, path);
+		for (int i = 99; i > 0; i--)
+		{
+			if (mypath[i] == '/')break;
+			mypath[i] = 0;
+		}
+	//	osg::ref_ptr<osg::Image> image;
+		strcat(mypath, image[i].uri);
+		image[i].image = osgDB::readImageFile(mypath);
+		if (image[i].image == NULL)
+		image[i].image =osgDB::readImageFile(image[i].uri);
+		if (image[i].image != NULL)
+		{
+			cout << "\n-----------------------------------------------------\n";
+			cout << "Read images file(s) is succes! File:\n" << mypath << "\nName(path): " << image[i].uri;
+			cout << "\n-----------------------------------------------------\n";
+		}
+		else
+		{
+			cout << "\n-----------------------------------------------------\n";
+			cout << "Something Wrong, can't read! File:\n" << mypath << "\nName(path): " << image[i].uri;
+			cout << "\n-----------------------------------------------------\n";
+		}
+	}
+
+}
 void read_bin_files(char* path)
 {
 	char mypath[100]; 
@@ -1734,14 +2009,10 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group)
 			//MT->
 			osg::Matrix m;
 			m.set(nd[i].matrix);
-
 			//m.makeTranslate(nd[i].translation[0], nd[i].translation[1], nd[i].translation[2]);
 	//		m.setTrans(nd[i].translation[0], nd[i].translation[1], nd[i].translation[2]);
-		
-
 			//m.makeScale(nd[i].scale[0], nd[i].scale[1], nd[i].scale[2]);
 			//m = ;
-
 			MT->setMatrix(m);
 			nd[i].gr->addChild(MT.get());
 			MT->addChild(mhs[nd[i].mesh].mh.get());//
@@ -1750,25 +2021,20 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group)
 		}
 	//	if (nd[i].children.size() == 0){}
 		//roots->addChild(nd[i].gr);
-
 		//else
 		//{
 			for (int j = 0; j < nd[i].children.size(); j++){
 				osg::ref_ptr<osg::MatrixTransform> MT = new osg::MatrixTransform;
-				osg::Matrix m1;// osg::Matrix m2;
+				osg::Matrix m1; //osg::Matrix m2;
 				m1.set(nd[i].matrix);
 
 			//	for (int v = 0; v < 16; v++)
 			//		cout << m1(v / 4, v % 4) << "  " << nd[i].matrix[v]<<endl;
-
 			//	m2.set(nd[nd[i].children[j]].matrix);
 			//	osg::Matrix resultMat = m1 * m2;
-
 				MT->setMatrix(m1);
 				nd[i].gr->addChild(MT.get());
 				MT->addChild(nd[nd[i].children[j]].gr.get());
-				
-
 				//nd[nd[i].children[j]].matrix = resultMat.;///////!!!!//////
 			//	for (int v = 0; v < 16; v++)
 			//		nd[nd[i].children[j]].matrix[v] = resultMat(v / 4, v % 4);
@@ -1779,10 +2045,6 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group)
 				//nd[nd[i].children[j]].matrix[14] += nd[i].matrix[14];
 				//for (int g = 0; g < 16;g++)
 				//	nd[nd[i].children[j]].matrix[g] += nd[i].matrix[g];
-				
-
-
-
 				//nd[i].gr->addChild(nd[nd[i].children[j]].gr.get());
 			//	nd[nd[i].children[j]].gr->setName("geode");
 	//		}
@@ -1802,6 +2064,8 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group)
 	for (int i = 0; i < mhs.size(); i++)
 	{
 		osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
+		osg::StateSet* state = geom->getOrCreateStateSet();/////
+		osg::ref_ptr<osg::Texture2D> tex = new osg::Texture2D;////
 		vector<unsigned int> ii;////
 			int size_type = 4;
 			int position; position = mhs[i].POSITION;
@@ -1817,6 +2081,30 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group)
 				get_position_vec2(&v, position, size_type);
 				//geom->setVertexAttribBinding();
 				geom->setVertexArray(v.get());//coord->geom
+				cout << "P_R\n";
+			}
+			if (mhs[i].TEXCOORD_0 != -1)if (acces[mhs[i].TEXCOORD_0].type[0] == 'V'&&acces[mhs[i].TEXCOORD_0].type[1] == 'E'&&acces[mhs[i].TEXCOORD_0].type[2] == 'C' && acces[mhs[i].TEXCOORD_0].type[3] == '2'){
+				size_type = 2;
+				osg::ref_ptr<osg::Vec2Array> v = new osg::Vec2Array;
+				//	geom->setVertexArray(v.get());
+				get_position_vec2(&v, mhs[i].TEXCOORD_0, size_type);
+
+				geom->setTexCoordArray(0, v.get());
+			//	geom->addPrimitiveSet(sideIndices.get());
+				//geom->setVertexAttribBinding();
+			//	geom->setVertexArray(v.get());//coord->geom
+				cout << "P_R\n";
+			}
+			if (mhs[i].TEXCOORD_1!=-1)if(acces[mhs[i].TEXCOORD_1].type[0] == 'V'&&acces[mhs[i].TEXCOORD_1].type[1] == 'E'&&acces[mhs[i].TEXCOORD_1].type[2] == 'C' && acces[mhs[i].TEXCOORD_1].type[3] == '2'){
+				size_type = 2;
+				osg::ref_ptr<osg::Vec2Array> v = new osg::Vec2Array;
+				//	geom->setVertexArray(v.get());
+				get_position_vec2(&v, mhs[i].TEXCOORD_1, size_type);
+
+				geom->setTexCoordArray(1, v.get());
+				//	geom->addPrimitiveSet(sideIndices.get());
+				//geom->setVertexAttribBinding();
+				//	geom->setVertexArray(v.get());//coord->geom
 				cout << "P_R\n";
 			}
 		if (acces[position].type[0] == 'V'&&acces[position].type[1] == 'E'&&acces[position].type[2] == 'C' && acces[position].type[3] == '3'){
@@ -1903,11 +2191,9 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group)
 			if (acces[index].type[0] == 'M'&&acces[index].type[1] == 'A'&&acces[index].type[2] == 'T' && acces[index].type[3] == '3')size_type = 9;
 			if (acces[index].type[0] == 'M'&&acces[index].type[1] == 'A'&&acces[index].type[2] == 'T' && acces[index].type[3] == '4')size_type = 16;
 		}
-
-
 		////////////////////////////////////////////////////////////////////MATERIALS INPUT
 		int material_choose = -1; material_choose = mhs[i].material;
-		if (material_choose != -1){
+		if (material_choose != -1)if (mater[material_choose].baseColorFactor[0] != 0 && mater[material_choose].baseColorFactor[1] != 0 && mater[material_choose].baseColorFactor[2] != 0 && mater[material_choose].baseColorFactor[3] != 0){
 			osg::ref_ptr<osg::Vec4Array> mat_vec = new osg::Vec4Array;
 			geom->setColorArray(mat_vec.get());
 			geom->setColorBinding(osg::Geometry::BIND_OVERALL);
@@ -1968,8 +2254,58 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group)
 				osg::ref_ptr<osg::DrawElementsUInt> sideIndices = new osg::DrawElementsUInt(GL_TRIANGLES);
 				for (int j = 0; j < ii.size(); j++)
 					sideIndices->push_back(ii[j]);
+				
+				
+				
+			//	state->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::PROTECTED);
+			//	state->setRenderingHint(osg::StateSet::USE_RENDERBIN_DETAILS);
+
+				//tex->setUnRefImageDataAfterApply(true);
+				//state->setTextureAttributeAndModes(0, tex);
+				
+				//state->setTextureMode(0);
+			//	state->setTextureMode(0, GL_TEXTURE_WRAP_T, osg::StateAttribute::GL_REPEAT);
+				// Повторять текстуру по оси s
+				//tex->setImage(new osg::Image())
+				if (texture.size() != 0)
+				{
+
+					tex->setImage(image[texture[i].source].image.get());
+					//state->setTextureMode(0, GL_TEXTURE_GEN_S, osg::StateAttribute::ON);
+					//	mhs[i].mh->getOrCreateStateSet()->setTextureAttributesAndModes(0, GL_TEXTURE_GEN_Q)
+
+					switch (sampler[texture[i].sampler].wrapS)
+					{
+					case 10497:
+						tex->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT); break;
+					case 33648:
+						tex->setWrap(osg::Texture::WRAP_S, osg::Texture::MIRROR);
+						break;
+					default:
+						tex->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT); break;
+					}
+					switch (sampler[texture[i].sampler].wrapT)
+					{
+					case 10497:
+						tex->setWrap(osg::Texture::WRAP_T, osg::Texture::REPEAT); break;
+					case 33648:
+						tex->setWrap(osg::Texture::WRAP_T, osg::Texture::MIRROR);
+						break;
+					default:
+						tex->setWrap(osg::Texture::WRAP_T, osg::Texture::REPEAT); break;
+					}
+				}
+					// Повторять текстуру по оси r
+					//tex->setWrap(osg::Texture::WRAP_R, osg::Texture::REPEAT);
+				if(mater[mhs[i].material].baseColorTexture_index==-1)
+					mhs[i].mh->getOrCreateStateSet()->setTextureAttributeAndModes(0, tex.get());
+				else
+					mhs[i].mh->getOrCreateStateSet()->setTextureAttributeAndModes(mater[mhs[i].material].baseColorTexture_index, tex.get());
+				
 				//	osg::ref_ptr<osg::DrawElementsUInt> sideIndices =new osg::DrawElementsUInt(GL_QUAD_STRIP);
 				//	sideIndices->
+				//osg::ref_ptr<osg::Texture2D> tex = new osg::Texture2D;
+				//osg::StateSet* state = mhs[i].mh.get();
 				geom->addPrimitiveSet(sideIndices.get());
 				break;
 			}
@@ -1977,6 +2313,9 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group)
 			{
 			//		  geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::TRIANGLE_STRIP, 0, acces[mhs[i].POSITION].count)); break;
 					  osg::ref_ptr<osg::DrawElementsUInt> sideIndices = new osg::DrawElementsUInt(GL_TRIANGLE_STRIP);
+					//  geom->add
+					 
+						  geom->addPrimitiveSet(new osg::DrawArrays(GL_QUADS, 0, 4));
 					  for (int j = 0; j < ii.size(); j++)
 						  sideIndices->push_back(ii[j]);
 					  //	osg::ref_ptr<osg::DrawElementsUInt> sideIndices =new osg::DrawElementsUInt(GL_QUAD_STRIP);
@@ -2012,9 +2351,9 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group)
 			}
 		}
 	//	geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINES,0, acces[mhs[i].POSITION].count));
-		
 		// Добавить Geometry (Drawable) в Geode и вернуть Geode.
 		//osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+		
 		mhs[i].mh->addDrawable(geom.get());
 	//	scenns[0].sc->addChild(mhs[i].mh);
 		//acces[mhs[i].POSITION];
@@ -2022,16 +2361,15 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group)
 }
 osg::Group* open_gltf(char* path)
 {
-
-
 	osg::ref_ptr<osg::Group> group = new osg::Group;
-	group->setName("group_opa_opa");
+	group->setName("group");
 	ifstream ifs(path);
 	Json::Value val;
 	ifs >> val;
 //	MyPrint(cout, val, 0, 0, group);
 	decoder(val);
 	read_bin_files(path);
+	read_image_files(path);
 	add_groups_to_root(&group);
 	std::cout << '\n'; std::cout << '\n';
 	std::string cc = "";
