@@ -1,10 +1,10 @@
-#include<iostream>
-#include<fstream>
-#include<vector>
+#include <iostream>
+#include <fstream>
+#include <vector>
 #include <cstdlib>
 #include <json.h> 
 #include <osgViewer/Viewer>
-#include<osgDB/WriteFile>
+#include <osgDB/WriteFile>
 #include <osgDB/ReadFile>
 #include <osg/Geode>
 #include <osg/Texture2D>
@@ -13,7 +13,6 @@
 #include <osg/Group>
 #include <base64.h>
 #include <base64.cpp>
-//#include <iostream>
 struct scenn
 {
 	osg::ref_ptr<osg::Group> sc;
@@ -130,8 +129,6 @@ struct samplers
 	int wrapS;
 	int wrapT;
 };
-//osg::ref_ptr<osg::Geode> mesh_bank = new osg::Geode;
-//osg::ref_ptr<osg::Geode> mesh_bank = new osg::Geode;
 using namespace std;
 std::vector<samplers> sampler;
 samplers my_sampler;
@@ -1483,14 +1480,14 @@ void print(osg::ref_ptr<osg::Node> nod, std::string s)
 {
 	//cout << " asGr: " << nod->asGroup();
 	if (nod->asGroup() != NULL && nod->getName() != "geode")
-	for (int i = 0; i < nod->asGroup()->getNumChildren(); i++)
+	for (unsigned int i = 0; i < nod->asGroup()->getNumChildren(); i++)
 	{
 		std::cout << s << "Group: " << nod->asGroup()->getChild(i) << "\n";
 		s.push_back(' ');
 		print(nod->asGroup()->getChild(i), s);
 	}
 	if (nod->asTransform() != NULL)
-	for (int i = 0; i < nod->asTransform()->getNumChildren(); i++)
+	for (unsigned int i = 0; i < nod->asTransform()->getNumChildren(); i++)
 	{
 		std::cout << s << "MatrixTransform: " << nod->asTransform()->getChild(i) << "\n";
 		s.push_back('-');
@@ -1500,7 +1497,7 @@ void print(osg::ref_ptr<osg::Node> nod, std::string s)
 	//cout << " asgeode: " << nod->asGeode();
 	//if (nod->asGeode() != NULL)
 	if (nod->getName() == "geode")
-	for (int i = 0; i < nod->asGroup()->getNumChildren(); i++)
+	for (unsigned int i = 0; i < nod->asGroup()->getNumChildren(); i++)
 	{
 
 		std::cout << s << "Geode: " << nod->asGroup()->getChild(i) << "\n";
@@ -1511,16 +1508,16 @@ void print(osg::ref_ptr<osg::Node> nod, std::string s)
  };
 void read_image_files(char* path)
 {
-	char mypath[100];
+	char mypath[200];
 	
 	for (int i = 0; i < image.size(); i++)
 	{
 		memset(mypath, 0, sizeof(mypath));
 		strcpy(mypath, path);
-		for (int i = 99; i > 0; i--)
+		for (int j = 199; j > 0; j--)
 		{
-			if (mypath[i] == '/')break;
-			mypath[i] = 0;
+			if (mypath[j] == '/')break;
+			mypath[j] = 0;
 		}
 	//	osg::ref_ptr<osg::Image> image;
 		strcat(mypath, image[i].uri);
@@ -1750,7 +1747,7 @@ void get_position_vec2(osg::ref_ptr<osg::Vec2Array>* v, int position, int size_t
 		cout << "COMP_TYPE? uses 4byte";
 		break;
 	}
-	unsigned long int c;
+//	unsigned long int c;
 	if (stride == 0)stride = size_type*comp_type;
 
 	//	c = ((b - a) / stride)*size_type;
@@ -1845,7 +1842,7 @@ void get_position_vec3(osg::ref_ptr<osg::Vec3Array>* v,int position,int size_typ
 		cout << "COMP_TYPE? uses 4byte";
 		break;
 	}
-	unsigned long int c;
+//	unsigned long int c;
 	if (stride == 0)stride = size_type*comp_type;
 
 	//	c = ((b - a) / stride)*size_type;
@@ -1931,7 +1928,7 @@ void get_position_vec4(osg::ref_ptr<osg::Vec4Array>* v, int position, int size_t
 		cout << "COMP_TYPE? uses 4byte";
 		break;
 	}
-	unsigned long int c;
+	//unsigned long int c;
 	if (stride == 0)stride = size_type*comp_type;
 
 	//	c = ((b - a) / stride)*size_type;
@@ -2273,27 +2270,29 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group)
 					tex->setImage(image[texture[i].source].image.get());
 					//state->setTextureMode(0, GL_TEXTURE_GEN_S, osg::StateAttribute::ON);
 					//	mhs[i].mh->getOrCreateStateSet()->setTextureAttributesAndModes(0, GL_TEXTURE_GEN_Q)
-
-					switch (sampler[texture[i].sampler].wrapS)
-					{
-					case 10497:
-						tex->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT); break;
-					case 33648:
-						tex->setWrap(osg::Texture::WRAP_S, osg::Texture::MIRROR);
-						break;
-					default:
-						tex->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT); break;
+					if (sampler.size() != 0){
+						switch (sampler[texture[i].sampler].wrapS)
+						{
+						case 10497:
+							tex->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT); break;
+						case 33648:
+							tex->setWrap(osg::Texture::WRAP_S, osg::Texture::MIRROR);
+							break;
+						default:
+							tex->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT); break;
+						}
+						switch (sampler[texture[i].sampler].wrapT)
+						{
+						case 10497:
+							tex->setWrap(osg::Texture::WRAP_T, osg::Texture::REPEAT); break;
+						case 33648:
+							tex->setWrap(osg::Texture::WRAP_T, osg::Texture::MIRROR);
+							break;
+						default:
+							tex->setWrap(osg::Texture::WRAP_T, osg::Texture::REPEAT); break;
+						}
 					}
-					switch (sampler[texture[i].sampler].wrapT)
-					{
-					case 10497:
-						tex->setWrap(osg::Texture::WRAP_T, osg::Texture::REPEAT); break;
-					case 33648:
-						tex->setWrap(osg::Texture::WRAP_T, osg::Texture::MIRROR);
-						break;
-					default:
-						tex->setWrap(osg::Texture::WRAP_T, osg::Texture::REPEAT); break;
-					}
+					
 				}
 					// Повторять текстуру по оси r
 					//tex->setWrap(osg::Texture::WRAP_R, osg::Texture::REPEAT);
@@ -2371,10 +2370,12 @@ osg::Group* open_gltf(char* path)
 	read_bin_files(path);
 	read_image_files(path);
 	add_groups_to_root(&group);
+		for (int i = 0; i < bufs.size(); i++)//очистка памяти
+			free(bufs[i].byte_file_data);
 	std::cout << '\n'; std::cout << '\n';
 	std::string cc = "";
 //	group->addChild(new osg::Geode);
-	//print(group.get(), cc);
+	print(group.get(), cc);
 
 	std::cout << '\n';
 	/*for (int i = 0; i < group->getNumChildren(); i++)
