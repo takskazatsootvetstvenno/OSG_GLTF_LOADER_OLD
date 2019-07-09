@@ -14,6 +14,7 @@
 #include <base64.h>
 #include <base64.cpp>
 using namespace std;
+#define INDENT_FOR_GLTF_FILE_DATA 37// пропуск этих символов для формата base64(их 37): data:application/octet-stream;base64, 
 class Processed_data_gltf
 {
 private:
@@ -158,6 +159,7 @@ public:
 		meshes meh;
 		std::vector<materials> mater;
 		materials my_material;
+		bool DEBAG_INFORMATION_ON_CONSOLE=0;//1 - ВКЛ. вывод на крнсоль сообщений
 };
 /*osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
 // Создать массив для хранения четырех вершин.
@@ -603,14 +605,14 @@ void decoder_buffers(const Json::Value& val, int was = 0, int index = 0, Process
 											//	mhs[index].NORMAL = val[key].asLargestInt();
 											GLTF_processed_data->bufs[index].uri = (char*)val[key].asCString();
 											//	nd[index].mesh.push_back(val[i].asLargestInt());
-											cout << "uri";
+											if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "uri";
 											was = 2;
 										}
 										if (key == "byteLength")
 										{
 											GLTF_processed_data->bufs[index].byteLength = val[key].asLargestInt();
 											//	nd[index].mesh.push_back(val[i].asLargestInt());
-											cout << "byteLength";
+											if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "byteLength";
 											was = 1;
 										}
 										decoder_buffers(val[key], was, index, GLTF_processed_data);
@@ -1288,62 +1290,62 @@ void decoder(const Json::Value& val, Processed_data_gltf* GLTF_processed_data) {
 										const string& key = keys[i];
 										if (key == "scenes")
 										{
-											cout << "scenes\n";
+											if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)	cout << "scenes\n";
 											decoder_scenes(val[key], 0,0, GLTF_processed_data);
 										}
 										if (key == "nodes")
 										{
-											cout << "nodes\n";
+											if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "nodes\n";
 											decoder_nodes(val[key], 0, -1, GLTF_processed_data);
 										}
 										if (key == "meshes")
 										{
-											cout << "meshes\n";
+											if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "meshes\n";
 											decoder_meshes(val[key], 0, -1, GLTF_processed_data);
 										}
 										if (key == "cameras")
 										{
-											cout << "cameras\n";
+											if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "cameras\n";
 											decoder_cameras(val[key], 0, -1, GLTF_processed_data);
 										}
 										if (key == "asset")
 										{
-											cout << "asset\n";
+											if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)	cout << "asset\n";
 											decoder_version(val[key], 0, -1, GLTF_processed_data);
 										}
 										if (key == "accessors")
 										{
-											cout << "asset\n";
+											if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "asset\n";
 											decoder_accessors(val[key], 0, -1, GLTF_processed_data);
 										}
 										if (key == "bufferViews")
 										{
-											cout << "bufferViews\n";
+											if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "bufferViews\n";
 											decoder_bufferViews(val[key], 0, -1, GLTF_processed_data);
 										}
 										if (key == "buffers")
 										{
-											cout << "buffers\n";
+											if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "buffers\n";
 											decoder_buffers(val[key], 0, -1, GLTF_processed_data);
 										}
 										if (key == "materials")
 										{
-											cout << "materials\n";
+											if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "materials\n";
 											decoder_materials(val[key], 0, -1, GLTF_processed_data);
 										}
 										if (key == "textures")
 										{
-											cout << "textures\n";
+											if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "textures\n";
 											decoder_textures(val[key], 0, -1, GLTF_processed_data);
 										}
 										if (key == "images")
 										{
-											cout << "images\n";
+											if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "images\n";
 											decoder_images(val[key], 0, -1, GLTF_processed_data);
 										}
 										if (key == "samplers")
 										{
-											cout << "samplers\n";
+											if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "samplers\n";
 											decoder_samplers(val[key], 0, -1,GLTF_processed_data);
 										}
 									}
@@ -1509,71 +1511,86 @@ void print(osg::ref_ptr<osg::Node> nod, std::string s)
  };
 void read_image_files(char* path, Processed_data_gltf* GLTF_processed_data = NULL)
 {
-	char mypath[200];
-	
+	string mypath;
 	for (int i = 0; i < GLTF_processed_data->image.size(); i++)
 	{
-		memset(mypath, 0, sizeof(mypath));
-		strcpy(mypath, path);
-		for (int j = 199; j > 0; j--)
+		mypath = path;
+		//memset(mypath, 0, sizeof(mypath));
+		//strcpy(mypath, path);
+		for (long int iter = mypath.size() - 1; iter > 0; iter--)
 		{
-			if (mypath[j] == '/')break;
-			mypath[j] = 0;
+			if (mypath[iter] == '/')break;
+			mypath.pop_back();
 		}
+		//for (int j = 199; j > 0; j--)
+		//{
+		//	if (mypath[j] == '/')break;
+	//		mypath[j] = 0;
+	//	}
 	//	osg::ref_ptr<osg::Image> image;
-		strcat(mypath, GLTF_processed_data->image[i].uri);
+		//strcat(mypath, GLTF_processed_data->image[i].uri);
+		mypath += GLTF_processed_data->image[i].uri;
 		GLTF_processed_data->image[i].image = osgDB::readImageFile(mypath);
 		if (GLTF_processed_data->image[i].image == NULL)
 			GLTF_processed_data->image[i].image = osgDB::readImageFile(GLTF_processed_data->image[i].uri);
-		if (GLTF_processed_data->image[i].image != NULL)
-		{
-			cout << "\n-----------------------------------------------------\n";
-			cout << "Read images file(s) is succes! File:\n" << mypath << "\nName(path): " << GLTF_processed_data->image[i].uri;
-			cout << "\n-----------------------------------------------------\n";
-		}
-		else
-		{
-			cout << "\n-----------------------------------------------------\n";
-			cout << "Something Wrong, can't read! File:\n" << mypath << "\nName(path): " << GLTF_processed_data->image[i].uri;
-			cout << "\n-----------------------------------------------------\n";
-		}
+		if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)
+			if (GLTF_processed_data->image[i].image != NULL)
+			{
+				cout << "\n-----------------------------------------------------\n";
+				cout << "Read images file(s) is succes! File:\n" << mypath << "\nName(path): " << GLTF_processed_data->image[i].uri;
+				cout << "\n-----------------------------------------------------\n";
+			}
+			else
+			{
+				cout << "\n-----------------------------------------------------\n";
+				cout << "Something Wrong, can't read! File:\n" << mypath << "\nName(path): " << GLTF_processed_data->image[i].uri;
+				cout << "\n-----------------------------------------------------\n";
+			}
+		mypath.clear();
 	}
 
 }
 void read_bin_files(char* path, Processed_data_gltf* GLTF_processed_data = NULL)
 {
-	char mypath[100]; 
-	memset(mypath, 0, sizeof(mypath));
-	strcpy(mypath, path);
-	for (int i = 49; i > 0; i--)
+	string Qmypath;
+	Qmypath = path;
+	
+	for (long int iter = Qmypath.size() - 1; iter > 0; iter--)
 	{
-		if (mypath[i] == '/')break;
-		mypath[i] = 0;
+		if (Qmypath[iter] == '/')break;
+
+		Qmypath.pop_back();
+		//mypath[iter] = 0;
 	}
 	for (int i = 0; i < GLTF_processed_data->bufs.size(); i++)
 	{
+	//	iter = Qmypath.size()-1;
 		if (GLTF_processed_data->bufs[i].uri[0] == 'd' &&GLTF_processed_data->bufs[i].uri[1] == 'a' && GLTF_processed_data->bufs[i].uri[2] == 't'&&GLTF_processed_data->bufs[i].uri[3] == 'a')
 		{
 			///дописать, если данные хранятся в jltf
-		//	char* buffer=new char;//(char*)malloc(bufs[i].byteLength);
-			decode_base64_F((GLTF_processed_data->bufs[i].uri + 37), i, GLTF_processed_data);
+			//	char* buffer=new char;//(char*)malloc(bufs[i].byteLength);
+			decode_base64_F((GLTF_processed_data->bufs[i].uri + INDENT_FOR_GLTF_FILE_DATA), i, GLTF_processed_data);
 		}
 		else
 		{
-			strcat(mypath, GLTF_processed_data->bufs[i].uri);
-			ifstream reader(mypath, std::ios::binary | ios::in);
-			if (reader.is_open()){
-				
+		//	while (*(GLTF_processed_data->bufs[i].uri + Qmypath.size() - 1) != '\0'){
+		//		Qmypath.push_back(*(GLTF_processed_data->bufs[i].uri + iter));
+		//		iter++;
+		//	}
+			Qmypath += GLTF_processed_data->bufs[i].uri;
+			//strcat(mypath, GLTF_processed_data->bufs[i].uri);
 
+			ifstream reader(Qmypath, std::ios::binary | ios::in);
+			if (reader.is_open()){
 				char* buffer = (char*)malloc(GLTF_processed_data->bufs[i].byteLength);
-				
 				reader.read((char*)buffer, GLTF_processed_data->bufs[i].byteLength);
 				GLTF_processed_data->bufs[i].byte_file_data = buffer;
 				reader.close();
-
-				cout << "\n-----------------------------------------------------\n";
-				cout << "Read bin file is succes! File:\n" << mypath << "\nLength: " << GLTF_processed_data->bufs[i].byteLength;
-				cout << "\n-----------------------------------------------------\n";
+				if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE==true){
+					cout << "\n-----------------------------------------------------\n";
+					cout << "Read bin file is succes! File:\n" << Qmypath << "\nLength: " << GLTF_processed_data->bufs[i].byteLength;
+					cout << "\n-----------------------------------------------------\n";
+				}
 				return ;
 				/*for (int j = 0; j < bufs[i].byteLength; j++)
 				{
@@ -1582,16 +1599,28 @@ void read_bin_files(char* path, Processed_data_gltf* GLTF_processed_data = NULL)
 				}*/
 			}
 			else
+				if(GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE==true)
 			{
 				cout << "\n-----------------------------------------------------\n";
-				cout << "Something Wrong, can't read! File:\n" << mypath << "\nLength: " << GLTF_processed_data->bufs[i].byteLength;
+				cout << "Something Wrong, can't read! File:\n" << Qmypath << "\nLength: " << GLTF_processed_data->bufs[i].byteLength;
 				cout << "\n-----------------------------------------------------\n";
 			}
-			memset(mypath, 0, sizeof(mypath));
-			strcpy(mypath, path);
-			for (int i = 29; i > 0; i--){
-				if (mypath[i] == '/')break;
-				mypath[i] = 0;
+			//memset(Qmypath, 0, sizeof(mypath));
+			Qmypath.clear();
+			//strcpy(mypath, path);
+			/*iter = 0;
+			while (*(path + iter) != '\0'){
+				Qmypath.push_back(*(path + iter));
+				iter++;
+			}*/
+			Qmypath = path;
+			//memset(Qmypath, 0, sizeof(mypath));
+			//strcpy(mypath, path);
+			for (long int iter = Qmypath.size() - 1; iter > 0; iter--)
+			{
+				if (Qmypath[iter] == '/')break;
+				Qmypath.pop_back();
+				//mypath[iter] = 0;
 			}
 		}
 	}
@@ -2078,7 +2107,7 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 				get_position_vec2(&v, position, size_type, GLTF_processed_data);
 				//geom->setVertexAttribBinding();
 				geom->setVertexArray(v.get());//coord->geom
-				cout << "P_R\n";
+				if(GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE==true)cout << "P_R\n";
 			}
 			if (GLTF_processed_data->mhs[i].TEXCOORD_0 != -1)if (GLTF_processed_data->acces[GLTF_processed_data->mhs[i].TEXCOORD_0].type[0] == 'V'&&GLTF_processed_data->acces[GLTF_processed_data->mhs[i].TEXCOORD_0].type[1] == 'E'&&GLTF_processed_data->acces[GLTF_processed_data->mhs[i].TEXCOORD_0].type[2] == 'C' && GLTF_processed_data->acces[GLTF_processed_data->mhs[i].TEXCOORD_0].type[3] == '2'){
 				size_type = 2;
@@ -2090,7 +2119,7 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 			//	geom->addPrimitiveSet(sideIndices.get());
 				//geom->setVertexAttribBinding();
 			//	geom->setVertexArray(v.get());//coord->geom
-				cout << "P_R\n";
+				if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "P_R\n";
 			}
 			if (GLTF_processed_data->mhs[i].TEXCOORD_1 != -1)if (GLTF_processed_data->acces[GLTF_processed_data->mhs[i].TEXCOORD_1].type[0] == 'V'&&GLTF_processed_data->acces[GLTF_processed_data->mhs[i].TEXCOORD_1].type[1] == 'E'&&GLTF_processed_data->acces[GLTF_processed_data->mhs[i].TEXCOORD_1].type[2] == 'C' && GLTF_processed_data->acces[GLTF_processed_data->mhs[i].TEXCOORD_1].type[3] == '2'){
 				size_type = 2;
@@ -2102,7 +2131,7 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 				//	geom->addPrimitiveSet(sideIndices.get());
 				//geom->setVertexAttribBinding();
 				//	geom->setVertexArray(v.get());//coord->geom
-				cout << "P_R\n";
+				if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "P_R\n";
 			}
 			if (GLTF_processed_data->acces[position].type[0] == 'V'&&GLTF_processed_data->acces[position].type[1] == 'E'&&GLTF_processed_data->acces[position].type[2] == 'C' && GLTF_processed_data->acces[position].type[3] == '3'){
 			size_type = 3;
@@ -2111,7 +2140,7 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 			get_position_vec3(&v, position, size_type, GLTF_processed_data);
 			//geom->setVertexAttribBinding();
 			geom->setVertexArray(v.get());//coord->geom
-			cout << "P_R\n";
+			if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "P_R\n";
 		}
 			if (GLTF_processed_data->acces[position].type[0] == 'V'&&GLTF_processed_data->acces[position].type[1] == 'E'&&GLTF_processed_data->acces[position].type[2] == 'C' && GLTF_processed_data->acces[position].type[3] == '4'){
 			size_type = 4;
@@ -2120,7 +2149,7 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 			get_position_vec4(&v, position, size_type, GLTF_processed_data);
 			//geom->setVertexAttribBinding();
 			geom->setVertexArray(v.get());//coord->geom
-			cout << "P_R\n";
+			if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "P_R\n";
 		}
 		
 			if (GLTF_processed_data->acces[position].type[0] == 'M'&&GLTF_processed_data->acces[position].type[1] == 'A'&&GLTF_processed_data->acces[position].type[2] == 'T' && GLTF_processed_data->acces[position].type[3] == '2')size_type = 4;
@@ -2141,7 +2170,7 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 				geom->setNormalArray(n.get());//normal_coord->geom
 				geom->setNormalBinding(osg::Geometry::BIND_PER_VERTEX);
 
-				cout << "N_R\n";
+				if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "N_R\n";
 			}
 			if (GLTF_processed_data->acces[normal].type[0] == 'V'&&GLTF_processed_data->acces[normal].type[1] == 'E'&&GLTF_processed_data->acces[normal].type[2] == 'C' && GLTF_processed_data->acces[normal].type[3] == '3'){
 				size_type = 3;
@@ -2151,7 +2180,7 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 				geom->setNormalArray(n.get());//normal_coord->geom
 				geom->setNormalBinding(osg::Geometry::BIND_PER_VERTEX);
 				
-				cout << "N_R\n";
+				if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "N_R\n";
 			}
 
 			if (GLTF_processed_data->acces[normal].type[0] == 'V'&&GLTF_processed_data->acces[normal].type[1] == 'E'&&GLTF_processed_data->acces[normal].type[2] == 'C' && GLTF_processed_data->acces[normal].type[3] == '4'){
@@ -2162,7 +2191,7 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 				geom->setNormalArray(n.get());//normal_coord->geom
 				geom->setNormalBinding(osg::Geometry::BIND_PER_VERTEX);
 
-				cout << "N_R\n";
+				if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "N_R\n";
 			}
 			if (GLTF_processed_data->acces[normal].type[0] == 'M'&&GLTF_processed_data->acces[normal].type[1] == 'A'&&GLTF_processed_data->acces[normal].type[2] == 'T' && GLTF_processed_data->acces[normal].type[3] == '2')size_type = 4;
 			if (GLTF_processed_data->acces[normal].type[0] == 'M'&&GLTF_processed_data->acces[normal].type[1] == 'A'&&GLTF_processed_data->acces[normal].type[2] == 'T' && GLTF_processed_data->acces[normal].type[3] == '3')size_type = 9;
@@ -2179,7 +2208,7 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 				get_scalar(&ii, index, size_type, GLTF_processed_data);//////////СВЯЗАТЬ ИНДЕКСЫ И КООРДИНАТЫ
 				//DrawElementsUInt
 					//geom->drawe
-				cout << "SC_R\n";
+				if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "SC_R\n";
 			}
 			if (GLTF_processed_data->acces[index].type[0] == 'V'&&GLTF_processed_data->acces[index].type[1] == 'E'&&GLTF_processed_data->acces[index].type[2] == 'C' && GLTF_processed_data->acces[index].type[3] == '2')size_type = 2;
 			if (GLTF_processed_data->acces[index].type[0] == 'V'&&GLTF_processed_data->acces[index].type[1] == 'E'&&GLTF_processed_data->acces[index].type[2] == 'C' && GLTF_processed_data->acces[index].type[3] == '3')size_type = 3;
@@ -2357,12 +2386,14 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 		//acces[mhs[i].POSITION];
 	}
 }
-osg::Group* open_gltf(char* path)
+osg::Group* open_gltf(char* path,int argc,char* MODE)
 {
+
 	osg::ref_ptr<osg::Group> group = new osg::Group;
 	group->setName("group");
-	
 	Processed_data_gltf* GLTF_processed_data = new Processed_data_gltf;//для хранения информации из файла
+	if(argc>2 && strlen(MODE)>=4)if(MODE[0] == 'D' && MODE[1] == 'E' && MODE[2] == 'B' && MODE[3] == 'U' && MODE[4] == 'G')GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE = 1;
+	if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)std::cout << "PATH: " << path << std::endl;
 	ifstream ifs(path);
 	Json::Value val;
 	ifs >> val;
