@@ -2392,6 +2392,12 @@ osg::Group* open_gltf(char* path,int argc,char* MODE)
 	osg::ref_ptr<osg::Group> group = new osg::Group;
 	group->setName("group");
 	Processed_data_gltf* GLTF_processed_data = new Processed_data_gltf;//для хранения информации из файла
+	long int temp_iter=1;
+	while (path[temp_iter] != '\0')
+	{
+		if (path[temp_iter] == '\\')path[temp_iter] = '/';
+		temp_iter++;
+	}
 	if(argc>2 && strlen(MODE)>=4)if(MODE[0] == 'D' && MODE[1] == 'E' && MODE[2] == 'B' && MODE[3] == 'U' && MODE[4] == 'G')GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE = 1;
 	if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)std::cout << "PATH: " << path << std::endl;
 	ifstream ifs(path);
