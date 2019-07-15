@@ -385,7 +385,7 @@ void decode_base64_F(char *decode, unsigned int i, Processed_data_gltf* GLTF_pro
 {
 	std::string decoded = base64_decode(decode);
 	char* dec = new char[GLTF_processed_data->bufs[i].byteLength];
-	for (int j = 0; j < GLTF_processed_data->bufs[i].byteLength; j++)
+	for (long int j = 0; j < GLTF_processed_data->bufs[i].byteLength; j++)
 	dec[j] = decoded[j];
 	GLTF_processed_data->bufs[i].byte_file_data = dec;
 }
@@ -2324,7 +2324,7 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 				}
 					// Повторять текстуру по оси r
 					//tex->setWrap(osg::Texture::WRAP_R, osg::Texture::REPEAT);
-				if (GLTF_processed_data->mater[GLTF_processed_data->mhs[i].material].baseColorTexture_index == -1)
+				if (GLTF_processed_data->mhs[i].material>=0)if (GLTF_processed_data->mater[GLTF_processed_data->mhs[i].material].baseColorTexture_index == -1)//внимание, если материала нет, то не рассматривать в принципе!
 					GLTF_processed_data->mhs[i].mh->getOrCreateStateSet()->setTextureAttributeAndModes(0, tex.get());
 				else
 					GLTF_processed_data->mhs[i].mh->getOrCreateStateSet()->setTextureAttributeAndModes(GLTF_processed_data->mater[GLTF_processed_data->mhs[i].material].baseColorTexture_index, tex.get());
@@ -2386,7 +2386,7 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 		//acces[mhs[i].POSITION];
 	}
 }
-osg::Group* open_gltf(char* path,int argc,char* MODE)
+osg::Group* open_gltf(char* path,int argc,char* MODE)//путь, число аргументов, аргумент
 {
 
 	osg::ref_ptr<osg::Group> group = new osg::Group;
@@ -2398,7 +2398,7 @@ osg::Group* open_gltf(char* path,int argc,char* MODE)
 		if (path[temp_iter] == '\\')path[temp_iter] = '/';
 		temp_iter++;
 	}
-	if(argc>2 && strlen(MODE)>=4)if(MODE[0] == 'D' && MODE[1] == 'E' && MODE[2] == 'B' && MODE[3] == 'U' && MODE[4] == 'G')GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE = 1;
+	if (argc > 2 && strlen(MODE) >= 4)if (MODE[0] == 'D' && MODE[1] == 'E' && MODE[2] == 'B' && MODE[3] == 'U' && MODE[4] == 'G')GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE = 1; else GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE = 0;
 	if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)std::cout << "PATH: " << path << std::endl;
 	ifstream ifs(path);
 	Json::Value val;
