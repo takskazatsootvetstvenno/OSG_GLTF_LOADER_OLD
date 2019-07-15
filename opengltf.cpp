@@ -2025,9 +2025,9 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 			GLTF_processed_data->nd[i].matrix[0] = 1; GLTF_processed_data->nd[i].matrix[5] = 1; GLTF_processed_data->nd[i].matrix[10] = 1; GLTF_processed_data->nd[i].matrix[15] = 1;
 		}
 		//СДВИГ
-		//nd[i].matrix[12] += nd[i].translation[0]; 
-		//nd[i].matrix[13] += nd[i].translation[1];
-		//nd[i].matrix[14] += nd[i].translation[2];
+		GLTF_processed_data->nd[i].matrix[12] += GLTF_processed_data->nd[i].translation[0];
+		GLTF_processed_data->nd[i].matrix[13] += GLTF_processed_data->nd[i].translation[1];
+		GLTF_processed_data->nd[i].matrix[14] += GLTF_processed_data->nd[i].translation[2];
 
 		if (GLTF_processed_data->nd[i].mesh != -1)
 		{
@@ -2035,6 +2035,7 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 			//MT->
 			osg::Matrix m;
 			m.set(GLTF_processed_data->nd[i].matrix);
+		
 			//m.makeTranslate(nd[i].translation[0], nd[i].translation[1], nd[i].translation[2]);
 	//		m.setTrans(nd[i].translation[0], nd[i].translation[1], nd[i].translation[2]);
 			//m.makeScale(nd[i].scale[0], nd[i].scale[1], nd[i].scale[2]);
