@@ -31,6 +31,7 @@ private:
 		double matrix[16];
 		double translation[3];
 		double scale[3];
+		double rotation[4];
 		int mesh = -1;// только 1 mesh! -1 значит mesh не привязан
 		int camera = -1;//-1 значит не привязан
 	};
@@ -1149,6 +1150,12 @@ void decoder_nodes(const Json::Value& val, int was = 0, int index = 0, Processed
 										   GLTF_processed_data->nd[index].scale[i] = val[i].asDouble();
 										   decoder_nodes(val[i], was, index, GLTF_processed_data);
 									   }
+									   if (was == 7){
+										   GLTF_processed_data->nd[index].rotation[i] = val[i].asDouble();
+										   //	nd[index].mesh.push_back(val[i].asLargestInt());
+										   //cout << "camera";
+										   decoder_nodes(val[i], was, index, GLTF_processed_data);
+									   }
 								   }
 
 
@@ -1162,6 +1169,11 @@ void decoder_nodes(const Json::Value& val, int was = 0, int index = 0, Processed
 									vector<string> keys = val.getMemberNames();
 									for (size_t i = 0; i<keys.size(); i++) {
 										const string& key = keys[i];
+										if (key == "rotation")
+										{
+
+											was = 7;
+										}
 										if (key == "camera")
 										{
 											GLTF_processed_data->nd[index].camera = val[key].asLargestInt();
@@ -2015,6 +2027,7 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 
 	for (int i = 0; i < GLTF_processed_data->nd.size(); i++)//nodes
 	{
+		osg::Matrix m;
 		if (GLTF_processed_data->nd[i].scale[0] == 0 && GLTF_processed_data->nd[i].scale[1] == 0 && GLTF_processed_data->nd[i].scale[2] == 0)
 		{
 			GLTF_processed_data->nd[i].scale[0] = 1; GLTF_processed_data->nd[i].scale[1] = 1; GLTF_processed_data->nd[i].scale[2] = 1;
@@ -2023,28 +2036,60 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 			GLTF_processed_data->nd[i].matrix[8] == 0 && GLTF_processed_data->nd[i].matrix[9] == 0 && GLTF_processed_data->nd[i].matrix[10] == 0 && GLTF_processed_data->nd[i].matrix[11] == 0 && GLTF_processed_data->nd[i].matrix[12] == 0 && GLTF_processed_data->nd[i].matrix[13] == 0 && GLTF_processed_data->nd[i].matrix[14] == 0 && GLTF_processed_data->nd[i].matrix[15] == 0)
 		{
 			GLTF_processed_data->nd[i].matrix[0] = 1; GLTF_processed_data->nd[i].matrix[5] = 1; GLTF_processed_data->nd[i].matrix[10] = 1; GLTF_processed_data->nd[i].matrix[15] = 1;
+			
+			osg::Matrix m1, m2, m3;//m1 - translate,m2-rotate,m3-scale
+			m1.makeTranslate(GLTF_processed_data->nd[i].translation[0], GLTF_processed_data->nd[i].translation[1], GLTF_processed_data->nd[i].translation[2]);
+			//Scale:
+			GLTF_processed_data->nd[i].matrix[0] *= GLTF_processed_data->nd[i].scale[0];
+			GLTF_processed_data->nd[i].matrix[5] *= GLTF_processed_data->nd[i].scale[1];
+			GLTF_processed_data->nd[i].matrix[10] *= GLTF_processed_data->nd[i].scale[2];
+			//
+			if (GLTF_processed_data->nd[i].rotation[0] != 0 || GLTF_processed_data->nd[i].rotation[1] != 0 || GLTF_processed_data->nd[i].rotation[2] != 0 || GLTF_processed_data->nd[i].rotation[3] != 0)m2.makeRotate(osg::Quat(GLTF_processed_data->nd[i].rotation[0], GLTF_processed_data->nd[i].rotation[1], GLTF_processed_data->nd[i].rotation[2], GLTF_processed_data->nd[i].rotation[3]));
+			else { m2.identity(); }//rotate от нуля ничего не даёт
+			//[0] = GLTF_processed_data->nd[i].scale[0];
+			m3.set(GLTF_processed_data->nd[i].matrix);
+			m = (m3*m2)*m1;//S*R*T
+		
 		}
-		//СДВИГ
-		GLTF_processed_data->nd[i].matrix[12] += GLTF_processed_data->nd[i].translation[0];
-		GLTF_processed_data->nd[i].matrix[13] += GLTF_processed_data->nd[i].translation[1];
-		GLTF_processed_data->nd[i].matrix[14] += GLTF_processed_data->nd[i].translation[2];
-
+		else
+		{
+			//osg::Matrix m;
+			m.set(GLTF_processed_data->nd[i].matrix);
+		}
 		if (GLTF_processed_data->nd[i].mesh != -1)
 		{
 			osg::ref_ptr<osg::MatrixTransform> MT = new osg::MatrixTransform;
 			//MT->
-			osg::Matrix m;
-			m.set(GLTF_processed_data->nd[i].matrix);
-		
+			//
+		//	GLTF_processed_data->nd[i].translation[0] = 10; GLTF_processed_data->nd[i].translation[1] = 20; GLTF_processed_data->nd[i].translation[2] = 30;
+		//	GLTF_processed_data->nd[i].rotation[0] = 0.259; GLTF_processed_data->nd[i].rotation[1] = 0; GLTF_processed_data->nd[i].rotation[2] = 0; GLTF_processed_data->nd[i].rotation[3] = 0.966;
+		//	GLTF_processed_data->nd[i].scale[0] = 2.0; GLTF_processed_data->nd[i].scale[1] = 1.0; GLTF_processed_data->nd[i].scale[2] = 0.5; 
+			//
+			//m.scale(GLTF_processed_data->nd[i].scale[0], GLTF_processed_data->nd[i].scale[1], GLTF_processed_data->nd[i].scale[2]);
+			//m2.setTrans(GLTF_processed_data->nd[i].translation[0], GLTF_processed_data->nd[i].translation[1], GLTF_processed_data->nd[i].translation[2]);
+			//m.set(GLTF_processed_data->nd[i].matrix);
+			//m.setTrans(GLTF_processed_data->nd[i].translation[0], GLTF_processed_data->nd[i].translation[1], GLTF_processed_data->nd[i].translation[2]);
+		//	m.setRotate()
+			//osg::Quat(GLTF_processed_data->nd[i].rotation[0], GLTF_processed_data->nd[i].rotation[1], GLTF_processed_data->nd[i].rotation[2], GLTF_processed_data->nd[i].rotation[3]);
+			//m.setRotate(osg::Quat(GLTF_processed_data->nd[i].rotation[0], GLTF_processed_data->nd[i].rotation[1], GLTF_processed_data->nd[i].rotation[2], GLTF_processed_data->nd[i].rotation[3]));
+			//m.preMultRotate(osg::Quat(GLTF_processed_data->nd[i].rotation[0], GLTF_processed_data->nd[i].rotation[1], GLTF_processed_data->nd[i].rotation[2], GLTF_processed_data->nd[i].rotation[3]));
+			//m.tScale(GLTF_processed_data->nd[i].scale[0], GLTF_processed_data->nd[i].scale[1], GLTF_processed_data->nd[i].scale[2]);
+			//Сдвиг
+	 		//GLTF_processed_data->nd[i].matrix[12] += GLTF_processed_data->nd[i].translation[0];
+			//GLTF_processed_data->nd[i].matrix[13] += GLTF_processed_data->nd[i].translation[1];
+			//GLTF_processed_data->nd[i].matrix[14] += GLTF_processed_data->nd[i].translation[2];
+			//Масштабирование
+			//GLTF_processed_data->nd[i].matrix[0] *= GLTF_processed_data->nd[i].scale[0];
+			//GLTF_processed_data->nd[i].matrix[5] *= GLTF_processed_data->nd[i].scale[1];
+			//GLTF_processed_data->nd[i].matrix[10] *= GLTF_processed_data->nd[i].scale[2];
+			//m.set(GLTF_processed_data->nd[i].matrix);
 			//m.makeTranslate(nd[i].translation[0], nd[i].translation[1], nd[i].translation[2]);
 	//		m.setTrans(nd[i].translation[0], nd[i].translation[1], nd[i].translation[2]);
 			//m.makeScale(nd[i].scale[0], nd[i].scale[1], nd[i].scale[2]);
 			//m = ;
 			MT->setMatrix(m);
 			GLTF_processed_data->nd[i].gr->addChild(MT.get());
-			MT->addChild(GLTF_processed_data->mhs[GLTF_processed_data->nd[i].mesh].mh.get());//
-			//std::cout << "3";
-			//nd[i].translation[0];
+			MT->addChild(GLTF_processed_data->mhs[GLTF_processed_data->nd[i].mesh].mh.get());
 		}
 	//	if (nd[i].children.size() == 0){}
 		//roots->addChild(nd[i].gr);
@@ -2054,7 +2099,6 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 				osg::ref_ptr<osg::MatrixTransform> MT = new osg::MatrixTransform;
 				osg::Matrix m1; //osg::Matrix m2;
 				m1.set(GLTF_processed_data->nd[i].matrix);
-
 			//	for (int v = 0; v < 16; v++)
 			//		cout << m1(v / 4, v % 4) << "  " << nd[i].matrix[v]<<endl;
 			//	m2.set(nd[nd[i].children[j]].matrix);
