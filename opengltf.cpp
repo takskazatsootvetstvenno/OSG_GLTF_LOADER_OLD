@@ -75,6 +75,15 @@ private:
 		int componentType;
 		int byteOffset = 0;
 		int bufferView;
+
+		int spare_count=-1;
+
+		int spare_indeces_buffer_view = -1;
+		int spare_indeces_byteOffset = 0;
+		int spare_indeces_componentType = -1;
+
+		int spare_values_buffer_view = -1;
+		int spare_values_byteOffset = 0;
 	};
 	struct buffers
 	{
@@ -721,7 +730,7 @@ void decoder_bufferViews(const Json::Value& val, int was = 0, int index = 0, Pro
 		exit(0);
 	}
 }
-void decoder_accessors(const Json::Value& val, int was = 0, int index = 0, Processed_data_gltf* GLTF_processed_data = NULL){//nodes - 0; childeren - 1; matrix - 2;mesh - 3
+void decoder_accessors(const Json::Value& val, int was = 0, int index = 0 ,Processed_data_gltf* GLTF_processed_data = NULL){//nodes - 0; childeren - 1; matrix - 2;mesh - 3
 	switch (val.type()) {
 	case Json::nullValue: break;
 	case Json::booleanValue: break;
@@ -766,59 +775,99 @@ void decoder_accessors(const Json::Value& val, int was = 0, int index = 0, Proce
 									vector<string> keys = val.getMemberNames();
 									for (size_t i = 0; i<keys.size(); i++) {
 										const string& key = keys[i];
-										was = 8;
-										if (key == "type")
+									//	was = 18;
+										if (key == "sparse")
 										{
 											//	mhs[index].NORMAL = val[key].asLargestInt();
-											GLTF_processed_data->acces[index].type = (char*)val[key].asCString();
+											//GLTF_processed_data->acces[index].type = (char*)val[key].asCString();
 											//	nd[index].mesh.push_back(val[i].asLargestInt());
 											//cout << "type";
-											was = 7;
+											was = 21;
 										}
-										if (key == "count")
+										if (key == "indices")
 										{
-											GLTF_processed_data->acces[index].count = val[key].asLargestInt();
+											//GLTF_processed_data->acces[index].spare_count = val[key].asLargestInt();
 											//	nd[index].mesh.push_back(val[i].asLargestInt());
 											//cout << "count";
-											was = 6;
+											was = 23;
+											decoder_accessors(val[key], was, index, GLTF_processed_data);
 										}
-
+										if (key == "values")
+										{
+											//GLTF_processed_data->acces[index].spare_count = val[key].asLargestInt();
+											//	nd[index].mesh.push_back(val[i].asLargestInt());
+											//cout << "count";
+											was = 24;
+											decoder_accessors(val[key], was, index, GLTF_processed_data);
+										}
+										if (key == "type")
+											{
+												//	mhs[index].NORMAL = val[key].asLargestInt();
+												GLTF_processed_data->acces[index].type = (char*)val[key].asCString();
+												//	nd[index].mesh.push_back(val[i].asLargestInt());
+												//cout << "type";
+												was = 7;
+											}
+						/*				if (key == "count")
+											{
+												GLTF_processed_data->acces[index].count = val[key].asLargestInt();
+												//	nd[index].mesh.push_back(val[i].asLargestInt());
+												//cout << "count";
+												was = 6;
+											}*/
 										if (key == "componentType")
-										{
-											GLTF_processed_data->acces[index].componentType = val[key].asLargestInt();
-											//	nd[index].mesh.push_back(val[i].asLargestInt());
-											//cout << "componentType";
-											was = 5;
-										}
+											{
+												if(was <20)GLTF_processed_data->acces[index].componentType = val[key].asLargestInt();
+												else GLTF_processed_data->acces[index].spare_indeces_componentType = val[key].asLargestInt();
+												//	nd[index].mesh.push_back(val[i].asLargestInt());
+												//cout << "componentType";
+											//	was = 5;
+											}
 										if (key == "byteOffset")
-										{
-											GLTF_processed_data->acces[index].byteOffset = val[key].asLargestInt();
-											//	nd[index].mesh.push_back(val[i].asLargestInt());
-											//cout << "byteOffset";
-											was = 4;
-										}
+											{
+											if (was < 20)GLTF_processed_data->acces[index].byteOffset = val[key].asLargestInt();
+											else{
+												if (was == 23) GLTF_processed_data->acces[index].spare_indeces_byteOffset = val[key].asLargestInt();
+												if (was == 24) GLTF_processed_data->acces[index].spare_values_byteOffset = val[key].asLargestInt();}
+											
+												//	nd[index].mesh.push_back(val[i].asLargestInt());
+												//cout << "byteOffset";
+											//	was = 4;
+											}
 										if (key == "bufferView")
-										{
-											GLTF_processed_data->acces[index].bufferView = val[key].asLargestInt();
-											//	nd[index].mesh.push_back(val[i].asLargestInt());
-											//cout << "bufferView";
-											was = 3;
-										}
+											{
+											if (was < 20)GLTF_processed_data->acces[index].bufferView = val[key].asLargestInt();
+											else{
+												if (was == 23) GLTF_processed_data->acces[index].spare_indeces_buffer_view = val[key].asLargestInt();
+												if (was == 24) GLTF_processed_data->acces[index].spare_values_buffer_view = val[key].asLargestInt();
+											}
+												
+												//	nd[index].mesh.push_back(val[i].asLargestInt());
+												//cout << "bufferView";
+											//	was = 3;
+											}
 										if (key == "min")
-										{
-											//mhs[index].material = val[key].asLargestInt();
-											//	nd[index].mesh.push_back(val[i].asLargestInt());
-											//cout << "min";
-											was = 2;
-										}
+											{
+												//mhs[index].material = val[key].asLargestInt();
+												//	nd[index].mesh.push_back(val[i].asLargestInt());
+												//cout << "min";
+												was = 2;
+											}
 										if (key == "max")
-										{
-											//mhs[index].material = val[key].asLargestInt();
-											//	nd[index].mesh.push_back(val[i].asLargestInt());
-											//cout << "max";
-											was = 1;
-										}
-
+											{
+												//mhs[index].material = val[key].asLargestInt();
+												//	nd[index].mesh.push_back(val[i].asLargestInt());
+												//cout << "max";
+												was = 1;
+											}
+										if (key == "count")
+											{
+											if (was < 20)GLTF_processed_data->acces[index].count = val[key].asLargestInt();
+											else GLTF_processed_data->acces[index].spare_count = val[key].asLargestInt();
+												//	nd[index].mesh.push_back(val[i].asLargestInt());
+												//cout << "count";
+										//		was = 22;
+											}
 										decoder_accessors(val[key], was, index, GLTF_processed_data);
 
 									}
@@ -1742,6 +1791,111 @@ void get_scalar(vector<unsigned int>* v, int position, int size_type = 3, Proces
 	}
 	delete[] temp; delete[] objui; delete[] objus; delete[] objs; delete[] objuc; delete[] objc;
 }
+void get_scalar_for_spare_ind(vector<unsigned int>* v, int position, int size_type = 3, Processed_data_gltf* GLTF_processed_data = NULL)//получение координат
+{
+	unsigned long int a = 0;//начало
+	unsigned long int b = 0;//конец
+	int comp_type = 4;
+	//int size_type = 3;
+
+	unsigned int stride = 0;
+	stride = GLTF_processed_data->bufvs[GLTF_processed_data->acces[position].spare_indeces_buffer_view].byteStride;
+	a += GLTF_processed_data->bufvs[GLTF_processed_data->acces[position].spare_indeces_buffer_view].byteOffset;
+	b = GLTF_processed_data->bufvs[GLTF_processed_data->acces[position].spare_indeces_buffer_view].byteLength + a;
+	a += GLTF_processed_data->acces[position].spare_indeces_byteOffset;
+	/*if (acces[position].type[0] == 'S' && acces[position].type[1] == 'C'&& acces[position].type[2] == 'A'&& acces[position].type[3] == 'L'&& acces[position].type[4] == 'A'&&acces[position].type[5] == 'R')size_type = 1;
+	if (acces[position].type[0] == 'V'&&acces[position].type[1] == 'E'&&acces[position].type[2] == 'C' && acces[position].type[3] == '2')size_type = 2;
+	if (acces[position].type[0] == 'V'&&acces[position].type[1] == 'E'&&acces[position].type[2] == 'C' && acces[position].type[3] == '3')size_type = 3;
+	if (acces[position].type[0] == 'V'&&acces[position].type[1] == 'E'&&acces[position].type[2] == 'C' && acces[position].type[3] == '4')size_type = 4;
+	if (acces[position].type[0] == 'M'&&acces[position].type[1] == 'A'&&acces[position].type[2] == 'T' && acces[position].type[3] == '2')size_type = 4;
+	if (acces[position].type[0] == 'M'&&acces[position].type[1] == 'A'&&acces[position].type[2] == 'T' && acces[position].type[3] == '3')size_type = 9;
+	if (acces[position].type[0] == 'M'&&acces[position].type[1] == 'A'&&acces[position].type[2] == 'T' && acces[position].type[3] == '4')size_type = 16;
+	*/
+	switch (GLTF_processed_data->acces[position].spare_indeces_componentType)
+	{
+	case 5126://FLOAT 4
+		comp_type = 4;
+		break;
+	case 5125://UNSIGNED_INT 4
+		comp_type = 4;
+		break;
+	case 5123://UNSIGNED_SHORT 2
+		comp_type = 2;
+		break;
+	case 5122://SHORT 2
+		comp_type = 2;
+		break;
+	case 5121://UNSIGNED_BYTE 1
+		comp_type = 1;
+	case 5120://BYTE 1
+		comp_type = 1;
+		break;
+	default:
+		cout << "COMP_TYPE? uses 4byte";
+		break;
+	}
+	/*unsigned long int c;
+	if (stride == 0)
+	{
+	c = (b - a) / comp_type;
+	stride = size_type*comp_type;
+	}
+	else
+	c = (b - a) / stride;*/
+	if (stride == 0)stride = size_type*comp_type;
+
+	char*temp = new char[comp_type];//если stride не задан, значит он сам вектор
+
+	float* objf = new float[size_type];
+	unsigned int *objui = new unsigned int[size_type];
+	short *objs = new short[size_type];
+	unsigned char *objuc = new unsigned char[size_type];
+	unsigned short *objus = new unsigned short[size_type];
+	char *objc = new char[size_type];
+	for (int i = 0; i < GLTF_processed_data->acces[position].spare_count*size_type + 1; i++)
+	{
+		b = a + comp_type*size_type;//a-b  a-b  a-b
+		//if (i%comp_type == 0 &&i!=0){
+
+
+		if (i%size_type == 0 && i != 0){//фигня
+			switch (GLTF_processed_data->acces[position].spare_indeces_componentType)
+			{
+				//osg::Vec3ui(objui[0], objui[1], objui[2])
+
+				//case 5126:v->push_back(objf[0]); break;
+			case 5125:v->push_back(objui[0]); break;
+			case 5123:v->push_back(objus[0]); break;
+			case 5121:v->push_back(objuc[0]); break;
+			case 5120:v->push_back(objc[0]); break;
+			default:
+				v->push_back(objui[0]);
+				break;
+			}
+			//(*v)->push_back(osg::Vec3f(objf[0], objf[1], objf[2]));
+			a += stride;//сдвиг
+		}
+		for (int j = 0; j < comp_type; j++)
+		{
+			temp[j] = GLTF_processed_data->bufs[GLTF_processed_data->bufvs[GLTF_processed_data->acces[position].spare_indeces_buffer_view].buffer].byte_file_data[a + (i%size_type)*comp_type + j];
+		}
+		if (GLTF_processed_data->acces[position].spare_indeces_componentType == 5126){
+			objf[i%size_type] = ((float*)temp)[0];
+		}
+		if (GLTF_processed_data->acces[position].spare_indeces_componentType == 5125)//доделать для остальных типов
+			objui[i%size_type] = ((unsigned int*)temp)[0];
+		if (GLTF_processed_data->acces[position].spare_indeces_componentType == 5123)
+			objus[i%size_type] = ((unsigned short*)temp)[0];
+		if (GLTF_processed_data->acces[position].spare_indeces_componentType == 5122)
+			objs[i%size_type] = ((unsigned short*)temp)[0];
+		if (GLTF_processed_data->acces[position].spare_indeces_componentType == 5121)
+			objuc[i%size_type] = ((unsigned char*)temp)[0];
+		if (GLTF_processed_data->acces[position].spare_indeces_componentType == 5123)
+			objc[i%size_type] = ((char*)temp)[0];
+	}
+	delete[] temp; delete[] objui; delete[] objus; delete[] objs; delete[] objuc; delete[] objc;
+}
+
 void get_position_vec2(osg::ref_ptr<osg::Vec2Array>* v, int position, int size_type = 3, Processed_data_gltf* GLTF_processed_data = NULL)//получение координат
 {
 	unsigned long int a = 0;//начало
@@ -1931,6 +2085,7 @@ void get_position_vec3(osg::ref_ptr<osg::Vec3Array>* v, int position, int size_t
 		if (GLTF_processed_data->acces[position].componentType == 5123)
 				objc[i%size_type] = ((char*)temp)[0];
 	}
+	
 	delete[] temp; delete[] objui; delete[] objus; delete[] objs; delete[] objuc; delete[] objc;
 }
 void get_position_vec4(osg::ref_ptr<osg::Vec4Array>* v, int position, int size_type = 4, Processed_data_gltf* GLTF_processed_data = NULL)//получение координат
@@ -2142,6 +2297,8 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 			int position; position = GLTF_processed_data->mhs[i].POSITION;
 
 		//	osg::ref_ptr<osg::Vec3Array> v = new osg::Vec3Array;
+
+			
 			if (GLTF_processed_data->acces[position].type[0] == 'S' && GLTF_processed_data->acces[position].type[1] == 'C'&& GLTF_processed_data->acces[position].type[2] == 'A'&& GLTF_processed_data->acces[position].type[3] == 'L'&& GLTF_processed_data->acces[position].type[4] == 'A'&&GLTF_processed_data->acces[position].type[5] == 'R'){
 			
 			}
@@ -2180,11 +2337,12 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 			}
 			if (GLTF_processed_data->acces[position].type[0] == 'V'&&GLTF_processed_data->acces[position].type[1] == 'E'&&GLTF_processed_data->acces[position].type[2] == 'C' && GLTF_processed_data->acces[position].type[3] == '3'){
 			size_type = 3;
-			osg::ref_ptr<osg::Vec3Array> v = new osg::Vec3Array; 
+			osg::ref_ptr<osg::Vec3Array> v = new osg::Vec3Array;
 		//	geom->setVertexArray(v.get());
 			get_position_vec3(&v, position, size_type, GLTF_processed_data);
 			//geom->setVertexAttribBinding();
 			geom->setVertexArray(v.get());//coord->geom
+			
 			if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "P_R\n";
 		}
 			if (GLTF_processed_data->acces[position].type[0] == 'V'&&GLTF_processed_data->acces[position].type[1] == 'E'&&GLTF_processed_data->acces[position].type[2] == 'C' && GLTF_processed_data->acces[position].type[3] == '4'){
@@ -2262,6 +2420,89 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 			if (GLTF_processed_data->acces[index].type[0] == 'M'&&GLTF_processed_data->acces[index].type[1] == 'A'&&GLTF_processed_data->acces[index].type[2] == 'T' && GLTF_processed_data->acces[index].type[3] == '3')size_type = 9;
 			if (GLTF_processed_data->acces[index].type[0] == 'M'&&GLTF_processed_data->acces[index].type[1] == 'A'&&GLTF_processed_data->acces[index].type[2] == 'T' && GLTF_processed_data->acces[index].type[3] == '4')size_type = 16;
 		}
+		///////////////////////////////////////// Конец связывания
+
+		/////////////////////////////////////////////////SPARE_START!!!
+		if (GLTF_processed_data->acces[position].spare_count != -1){
+		//	GLTF_processed_data->acces[position].type = ""
+			
+			
+			
+
+			//if (GLTF_processed_data->acces[index].type[0] == 'S' && GLTF_processed_data->acces[index].type[1] == 'C'&& GLTF_processed_data->acces[index].type[2] == 'A'&& GLTF_processed_data->acces[index].type[3] == 'L'&& GLTF_processed_data->acces[index].type[4] == 'A'&&GLTF_processed_data->acces[index].type[5] == 'R')
+			//{
+			size_type = 1;
+			//get_position_vec3(&i, position, size_type);
+			vector<unsigned int> spare_i;////
+			get_scalar_for_spare_ind(&spare_i, position, size_type, GLTF_processed_data);
+			//////////////////////////////////////////////////////////////////////////////////////ФИНТ УШАМИ:
+			int temp_spare_count = GLTF_processed_data->acces[position].count;
+			int  temp_spare_byteOffset = GLTF_processed_data->acces[position].byteOffset;
+			int  temp_spare_bufferView = GLTF_processed_data->acces[position].bufferView;
+
+			GLTF_processed_data->acces[position].count = GLTF_processed_data->acces[position].spare_count;
+			GLTF_processed_data->acces[position].byteOffset= GLTF_processed_data->acces[position].spare_values_byteOffset;
+			GLTF_processed_data->acces[position].bufferView = GLTF_processed_data->acces[position].spare_values_buffer_view;
+
+			if (GLTF_processed_data->acces[position].type[0] == 'V'&&GLTF_processed_data->acces[position].type[1] == 'E'&&GLTF_processed_data->acces[position].type[2] == 'C' && GLTF_processed_data->acces[position].type[3] == '2'){
+				size_type = 2;
+				osg::ref_ptr<osg::Vec2Array> v = new osg::Vec2Array;
+				osg::Vec2Array *vertices = (osg::Vec2Array *)(geom->getVertexArray());
+				//	geom->setVertexArray(v.get());
+				get_position_vec2(&v, position, size_type, GLTF_processed_data);
+				for (int chr = 0; chr < spare_i.size(); chr++)
+				{
+					(*vertices)[spare_i[chr]] = (*v)[chr];
+				}
+				//geom->setVertexAttribBinding();
+				//geom->setVertexArray(v.get());//coord->geom
+				if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "P_R\n";
+			}
+			if (GLTF_processed_data->acces[position].type[0] == 'V'&&GLTF_processed_data->acces[position].type[1] == 'E'&&GLTF_processed_data->acces[position].type[2] == 'C' && GLTF_processed_data->acces[position].type[3] == '3'){
+				size_type = 3;
+				osg::ref_ptr<osg::Vec3Array> v = new osg::Vec3Array;
+				osg::Vec3Array *vertices = (osg::Vec3Array *)(geom->getVertexArray());
+				//	geom->setVertexArray(v.get());
+				get_position_vec3(&v, position, size_type, GLTF_processed_data);
+				for (int chr = 0; chr < spare_i.size(); chr++)
+				{
+					//osg::Vec3 lf = (*v)[chr];
+					//cout<<v[0][0][chr];
+			//		osg::Vec3 vector3_for_s = *v
+					(*vertices)[spare_i[chr]] = (*v)[chr];
+					//v[0]->asVector();
+				//	 = v[chr];
+				}
+				//osg::Vec3 vec3tor = (*vertices)[0];
+				//geom->setVertexAttribBinding();
+			//	geom->setVertexArray(v.get());//coord->geom
+
+				if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "P_R\n";
+			}
+			if (GLTF_processed_data->acces[position].type[0] == 'V'&&GLTF_processed_data->acces[position].type[1] == 'E'&&GLTF_processed_data->acces[position].type[2] == 'C' && GLTF_processed_data->acces[position].type[3] == '4'){
+				size_type = 4;
+				osg::ref_ptr<osg::Vec4Array> v = new osg::Vec4Array;
+				osg::Vec4Array *vertices = (osg::Vec4Array *)(geom->getVertexArray());
+				//	geom->setVertexArray(v.get());
+				get_position_vec4(&v, position, size_type, GLTF_processed_data);
+				for (int chr = 0; chr < spare_i.size(); chr++)
+				{
+					(*vertices)[spare_i[chr]] = (*v)[chr];
+				}
+
+				//geom->setVertexAttribBinding();
+			//	geom->setVertexArray(v.get());//coord->geom
+				if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "P_R\n";
+			}
+
+
+			/////////////////////////////////////////////////////////////////////////////////////КОНЕЦ ФИНТА УШАМИ
+			if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "SC_R_SPARE\n";
+			GLTF_processed_data->acces[position].count = temp_spare_count;
+			GLTF_processed_data->acces[position].byteOffset = temp_spare_byteOffset;
+			GLTF_processed_data->acces[position].bufferView = temp_spare_bufferView;}
+		////////////////////////////////////////////////////SPARE_END
+
 		////////////////////////////////////////////////////////////////////MATERIALS INPUT
 		int material_choose = -1; material_choose = GLTF_processed_data->mhs[i].material;
 		if (material_choose != -1)if (GLTF_processed_data->mater[material_choose].baseColorFactor[0] != 0 && GLTF_processed_data->mater[material_choose].baseColorFactor[1] != 0 && GLTF_processed_data->mater[material_choose].baseColorFactor[2] != 0 && GLTF_processed_data->mater[material_choose].baseColorFactor[3] != 0){
@@ -2426,6 +2667,10 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 		// Добавить Geometry (Drawable) в Geode и вернуть Geode.
 		//osg::ref_ptr<osg::Geode> geode = new osg::Geode;
 		
+	//	cout << vertices->asVector;
+	//	vertices[0]
+	//	vertices->mixin
+		//cout << geom->getVertexArray;
 		GLTF_processed_data->mhs[i].mh->addDrawable(geom.get());
 	//	scenns[0].sc->addChild(mhs[i].mh);
 		//acces[mhs[i].POSITION];
@@ -2433,7 +2678,6 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 }
 osg::Group* open_gltf(char* path,int argc,char* MODE)//путь, число аргументов, аргумент
 {
-
 	osg::ref_ptr<osg::Group> group = new osg::Group;
 	group->setName("group");
 	Processed_data_gltf* GLTF_processed_data = new Processed_data_gltf;//для хранения информации из файла
@@ -2472,8 +2716,6 @@ osg::Group* open_gltf(char* path,int argc,char* MODE)//путь, число ар
 			cout << "node";
 			g++;
 		}
-
-
 	}*/
 	return group.release();
 
