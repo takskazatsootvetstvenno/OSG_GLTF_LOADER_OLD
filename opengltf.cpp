@@ -2176,10 +2176,10 @@ void get_position_vec4(osg::ref_ptr<osg::Vec4Array>* v, int position, int size_t
 	}
 	delete[] temp; delete[] objui; delete[] objus; delete[] objs; delete[] objuc; delete[] objc;
 }
-void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GLTF_processed_data)
+void add_groups_to_root_matrix_and_scenes_init(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GLTF_processed_data)
 {
-	(*group)->addChild(GLTF_processed_data->scenns[0].sc.get());//scenna 0 - начало
 
+	(*group)->addChild(GLTF_processed_data->scenns[0].sc.get());//scenna 0 - начало //ОДНА СЦЕНА?...
 	for (int i = 0; i < GLTF_processed_data->nd.size(); i++)//nodes
 	{
 		osg::Matrix m;
@@ -2191,7 +2191,7 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 			GLTF_processed_data->nd[i].matrix[8] == 0 && GLTF_processed_data->nd[i].matrix[9] == 0 && GLTF_processed_data->nd[i].matrix[10] == 0 && GLTF_processed_data->nd[i].matrix[11] == 0 && GLTF_processed_data->nd[i].matrix[12] == 0 && GLTF_processed_data->nd[i].matrix[13] == 0 && GLTF_processed_data->nd[i].matrix[14] == 0 && GLTF_processed_data->nd[i].matrix[15] == 0)
 		{
 			GLTF_processed_data->nd[i].matrix[0] = 1; GLTF_processed_data->nd[i].matrix[5] = 1; GLTF_processed_data->nd[i].matrix[10] = 1; GLTF_processed_data->nd[i].matrix[15] = 1;
-			
+
 			osg::Matrix m1, m2, m3;//m1 - translate,m2-rotate,m3-scale
 			m1.makeTranslate(GLTF_processed_data->nd[i].translation[0], GLTF_processed_data->nd[i].translation[1], GLTF_processed_data->nd[i].translation[2]);
 			//Scale:
@@ -2204,7 +2204,6 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 			//[0] = GLTF_processed_data->nd[i].scale[0];
 			m3.set(GLTF_processed_data->nd[i].matrix);
 			m = (m3*m2)*m1;//S*R*T
-		
 		}
 		else
 		{
@@ -2216,21 +2215,21 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 			osg::ref_ptr<osg::MatrixTransform> MT = new osg::MatrixTransform;
 			//MT->
 			//
-		//	GLTF_processed_data->nd[i].translation[0] = 10; GLTF_processed_data->nd[i].translation[1] = 20; GLTF_processed_data->nd[i].translation[2] = 30;
-		//	GLTF_processed_data->nd[i].rotation[0] = 0.259; GLTF_processed_data->nd[i].rotation[1] = 0; GLTF_processed_data->nd[i].rotation[2] = 0; GLTF_processed_data->nd[i].rotation[3] = 0.966;
-		//	GLTF_processed_data->nd[i].scale[0] = 2.0; GLTF_processed_data->nd[i].scale[1] = 1.0; GLTF_processed_data->nd[i].scale[2] = 0.5; 
+			//	GLTF_processed_data->nd[i].translation[0] = 10; GLTF_processed_data->nd[i].translation[1] = 20; GLTF_processed_data->nd[i].translation[2] = 30;
+			//	GLTF_processed_data->nd[i].rotation[0] = 0.259; GLTF_processed_data->nd[i].rotation[1] = 0; GLTF_processed_data->nd[i].rotation[2] = 0; GLTF_processed_data->nd[i].rotation[3] = 0.966;
+			//	GLTF_processed_data->nd[i].scale[0] = 2.0; GLTF_processed_data->nd[i].scale[1] = 1.0; GLTF_processed_data->nd[i].scale[2] = 0.5; 
 			//
 			//m.scale(GLTF_processed_data->nd[i].scale[0], GLTF_processed_data->nd[i].scale[1], GLTF_processed_data->nd[i].scale[2]);
 			//m2.setTrans(GLTF_processed_data->nd[i].translation[0], GLTF_processed_data->nd[i].translation[1], GLTF_processed_data->nd[i].translation[2]);
 			//m.set(GLTF_processed_data->nd[i].matrix);
 			//m.setTrans(GLTF_processed_data->nd[i].translation[0], GLTF_processed_data->nd[i].translation[1], GLTF_processed_data->nd[i].translation[2]);
-		//	m.setRotate()
+			//	m.setRotate()
 			//osg::Quat(GLTF_processed_data->nd[i].rotation[0], GLTF_processed_data->nd[i].rotation[1], GLTF_processed_data->nd[i].rotation[2], GLTF_processed_data->nd[i].rotation[3]);
 			//m.setRotate(osg::Quat(GLTF_processed_data->nd[i].rotation[0], GLTF_processed_data->nd[i].rotation[1], GLTF_processed_data->nd[i].rotation[2], GLTF_processed_data->nd[i].rotation[3]));
 			//m.preMultRotate(osg::Quat(GLTF_processed_data->nd[i].rotation[0], GLTF_processed_data->nd[i].rotation[1], GLTF_processed_data->nd[i].rotation[2], GLTF_processed_data->nd[i].rotation[3]));
 			//m.tScale(GLTF_processed_data->nd[i].scale[0], GLTF_processed_data->nd[i].scale[1], GLTF_processed_data->nd[i].scale[2]);
 			//Сдвиг
-	 		//GLTF_processed_data->nd[i].matrix[12] += GLTF_processed_data->nd[i].translation[0];
+			//GLTF_processed_data->nd[i].matrix[12] += GLTF_processed_data->nd[i].translation[0];
 			//GLTF_processed_data->nd[i].matrix[13] += GLTF_processed_data->nd[i].translation[1];
 			//GLTF_processed_data->nd[i].matrix[14] += GLTF_processed_data->nd[i].translation[2];
 			//Масштабирование
@@ -2239,41 +2238,41 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 			//GLTF_processed_data->nd[i].matrix[10] *= GLTF_processed_data->nd[i].scale[2];
 			//m.set(GLTF_processed_data->nd[i].matrix);
 			//m.makeTranslate(nd[i].translation[0], nd[i].translation[1], nd[i].translation[2]);
-	//		m.setTrans(nd[i].translation[0], nd[i].translation[1], nd[i].translation[2]);
+			//		m.setTrans(nd[i].translation[0], nd[i].translation[1], nd[i].translation[2]);
 			//m.makeScale(nd[i].scale[0], nd[i].scale[1], nd[i].scale[2]);
 			//m = ;
 			MT->setMatrix(m);
 			GLTF_processed_data->nd[i].gr->addChild(MT.get());
 			MT->addChild(GLTF_processed_data->mhs[GLTF_processed_data->nd[i].mesh].mh.get());
 		}
-	//	if (nd[i].children.size() == 0){}
+		//	if (nd[i].children.size() == 0){}
 		//roots->addChild(nd[i].gr);
 		//else
 		//{
 		for (int j = 0; j < GLTF_processed_data->nd[i].children.size(); j++){
-				osg::ref_ptr<osg::MatrixTransform> MT = new osg::MatrixTransform;
-				osg::Matrix m1; //osg::Matrix m2;
-				m1.set(GLTF_processed_data->nd[i].matrix);
+			osg::ref_ptr<osg::MatrixTransform> MT = new osg::MatrixTransform;
+			osg::Matrix m1; //osg::Matrix m2;
+			m1.set(GLTF_processed_data->nd[i].matrix);
 			//	for (int v = 0; v < 16; v++)
 			//		cout << m1(v / 4, v % 4) << "  " << nd[i].matrix[v]<<endl;
 			//	m2.set(nd[nd[i].children[j]].matrix);
 			//	osg::Matrix resultMat = m1 * m2;
-				MT->setMatrix(m1);
-				GLTF_processed_data->nd[i].gr->addChild(MT.get());
-				MT->addChild(GLTF_processed_data->nd[GLTF_processed_data->nd[i].children[j]].gr.get());
-				//nd[nd[i].children[j]].matrix = resultMat.;///////!!!!//////
+			MT->setMatrix(m1);
+			GLTF_processed_data->nd[i].gr->addChild(MT.get());
+			MT->addChild(GLTF_processed_data->nd[GLTF_processed_data->nd[i].children[j]].gr.get());
+			//nd[nd[i].children[j]].matrix = resultMat.;///////!!!!//////
 			//	for (int v = 0; v < 16; v++)
 			//		nd[nd[i].children[j]].matrix[v] = resultMat(v / 4, v % 4);
 			//	int mmm[16]
-				//resultMat.;
-				//nd[nd[i].children[j]].matrix[12] += nd[i].matrix[12];
-				//nd[nd[i].children[j]].matrix[13] += nd[i].matrix[13];
-				//nd[nd[i].children[j]].matrix[14] += nd[i].matrix[14];
-				//for (int g = 0; g < 16;g++)
-				//	nd[nd[i].children[j]].matrix[g] += nd[i].matrix[g];
-				//nd[i].gr->addChild(nd[nd[i].children[j]].gr.get());
+			//resultMat.;
+			//nd[nd[i].children[j]].matrix[12] += nd[i].matrix[12];
+			//nd[nd[i].children[j]].matrix[13] += nd[i].matrix[13];
+			//nd[nd[i].children[j]].matrix[14] += nd[i].matrix[14];
+			//for (int g = 0; g < 16;g++)
+			//	nd[nd[i].children[j]].matrix[g] += nd[i].matrix[g];
+			//nd[i].gr->addChild(nd[nd[i].children[j]].gr.get());
 			//	nd[nd[i].children[j]].gr->setName("geode");
-	//		}
+			//		}
 		}
 	}
 	for (int i = 0; i < GLTF_processed_data->scenns.size(); i++)//scenes
@@ -2287,21 +2286,102 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 		}
 		//roots->addChild(sz[i].sc.get());
 	}
+
+}//+nodes
+void add_groups_to_root_spare(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GLTF_processed_data, osg::ref_ptr<osg::Geometry>* geom,int position)//SPARE
+{
+	if (GLTF_processed_data->acces[position].spare_count != -1){
+		//	GLTF_processed_data->acces[position].type = ""
+		//if (GLTF_processed_data->acces[index].type[0] == 'S' && GLTF_processed_data->acces[index].type[1] == 'C'&& GLTF_processed_data->acces[index].type[2] == 'A'&& GLTF_processed_data->acces[index].type[3] == 'L'&& GLTF_processed_data->acces[index].type[4] == 'A'&&GLTF_processed_data->acces[index].type[5] == 'R')
+		//{
+		int size_type = 1;
+		//get_position_vec3(&i, position, size_type);
+		vector<unsigned int> spare_i;////
+		get_scalar_for_spare_ind(&spare_i, position, size_type, GLTF_processed_data);
+		//////////////////////////////////////////////////////////////////////////////////////ФИНТ УШАМИ:
+		int temp_spare_count = GLTF_processed_data->acces[position].count;
+		int  temp_spare_byteOffset = GLTF_processed_data->acces[position].byteOffset;
+		int  temp_spare_bufferView = GLTF_processed_data->acces[position].bufferView;
+
+		GLTF_processed_data->acces[position].count = GLTF_processed_data->acces[position].spare_count;
+		GLTF_processed_data->acces[position].byteOffset = GLTF_processed_data->acces[position].spare_values_byteOffset;
+		GLTF_processed_data->acces[position].bufferView = GLTF_processed_data->acces[position].spare_values_buffer_view;
+
+		if (GLTF_processed_data->acces[position].type[0] == 'V'&&GLTF_processed_data->acces[position].type[1] == 'E'&&GLTF_processed_data->acces[position].type[2] == 'C' && GLTF_processed_data->acces[position].type[3] == '2'){
+			size_type = 2;
+			osg::ref_ptr<osg::Vec2Array> v = new osg::Vec2Array;
+			osg::Vec2Array *vertices = (osg::Vec2Array *)((*geom)->getVertexArray());
+			//	geom->setVertexArray(v.get());
+			get_position_vec2(&v, position, size_type, GLTF_processed_data);
+			for (int chr = 0; chr < spare_i.size(); chr++)
+			{
+				(*vertices)[spare_i[chr]] = (*v)[chr];
+			}
+			//geom->setVertexAttribBinding();
+			//geom->setVertexArray(v.get());//coord->geom
+			if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "P_R\n";
+		}
+		if (GLTF_processed_data->acces[position].type[0] == 'V'&&GLTF_processed_data->acces[position].type[1] == 'E'&&GLTF_processed_data->acces[position].type[2] == 'C' && GLTF_processed_data->acces[position].type[3] == '3'){
+			size_type = 3;
+			osg::ref_ptr<osg::Vec3Array> v = new osg::Vec3Array;
+			osg::Vec3Array *vertices = (osg::Vec3Array *)((*geom)->getVertexArray());
+			//	geom->setVertexArray(v.get());
+			get_position_vec3(&v, position, size_type, GLTF_processed_data);
+			for (int chr = 0; chr < spare_i.size(); chr++)
+			{
+				//osg::Vec3 lf = (*v)[chr];
+				//cout<<v[0][0][chr];
+				//		osg::Vec3 vector3_for_s = *v
+				(*vertices)[spare_i[chr]] = (*v)[chr];
+				//v[0]->asVector();
+				//	 = v[chr];
+			}
+			//osg::Vec3 vec3tor = (*vertices)[0];
+			//geom->setVertexAttribBinding();
+			//	geom->setVertexArray(v.get());//coord->geom
+
+			if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "P_R\n";
+		}
+		if (GLTF_processed_data->acces[position].type[0] == 'V'&&GLTF_processed_data->acces[position].type[1] == 'E'&&GLTF_processed_data->acces[position].type[2] == 'C' && GLTF_processed_data->acces[position].type[3] == '4'){
+			size_type = 4;
+			osg::ref_ptr<osg::Vec4Array> v = new osg::Vec4Array;
+			osg::Vec4Array *vertices = (osg::Vec4Array *)((*geom)->getVertexArray());
+			//	geom->setVertexArray(v.get());
+			get_position_vec4(&v, position, size_type, GLTF_processed_data);
+			for (int chr = 0; chr < spare_i.size(); chr++)
+			{
+				(*vertices)[spare_i[chr]] = (*v)[chr];
+			}
+			//geom->setVertexAttribBinding();
+			//	geom->setVertexArray(v.get());//coord->geom
+			if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "P_R\n";
+		}
+
+
+		/////////////////////////////////////////////////////////////////////////////////////КОНЕЦ ФИНТА УШАМИ
+		if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "SC_R_SPARE\n";
+		GLTF_processed_data->acces[position].count = temp_spare_count;
+		GLTF_processed_data->acces[position].byteOffset = temp_spare_byteOffset;
+		GLTF_processed_data->acces[position].bufferView = temp_spare_bufferView;
+	}
+}
+void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GLTF_processed_data)
+{
+	add_groups_to_root_matrix_and_scenes_init(group, GLTF_processed_data);
 	for (int i = 0; i < GLTF_processed_data->mhs.size(); i++)
 	{
 		osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
 		osg::StateSet* state = geom->getOrCreateStateSet();/////
 		osg::ref_ptr<osg::Texture2D> tex = new osg::Texture2D;////
-		vector<unsigned int> ii;////
+		vector<unsigned int> ii;///// это индексы
 			int size_type = 4;
 			int position; position = GLTF_processed_data->mhs[i].POSITION;
+			/////////////////////////////////////////////////////////////////////////////////////КООРДИНАТЫ НАЧАЛО
 
 		//	osg::ref_ptr<osg::Vec3Array> v = new osg::Vec3Array;
-
-			
-			if (GLTF_processed_data->acces[position].type[0] == 'S' && GLTF_processed_data->acces[position].type[1] == 'C'&& GLTF_processed_data->acces[position].type[2] == 'A'&& GLTF_processed_data->acces[position].type[3] == 'L'&& GLTF_processed_data->acces[position].type[4] == 'A'&&GLTF_processed_data->acces[position].type[5] == 'R'){
-			
-			}
+		//	if (GLTF_processed_data->acces[position].type[0] == 'S' && GLTF_processed_data->acces[position].type[1] == 'C'&& GLTF_processed_data->acces[position].type[2] == 'A'&& GLTF_processed_data->acces[position].type[3] == 'L'&& GLTF_processed_data->acces[position].type[4] == 'A'&&GLTF_processed_data->acces[position].type[5] == 'R'){
+		//	//координаты скалярно не задаются
+		//	}
 			if (GLTF_processed_data->acces[position].type[0] == 'V'&&GLTF_processed_data->acces[position].type[1] == 'E'&&GLTF_processed_data->acces[position].type[2] == 'C' && GLTF_processed_data->acces[position].type[3] == '2'){
 				size_type = 2;
 				osg::ref_ptr<osg::Vec2Array> v = new osg::Vec2Array;
@@ -2309,32 +2389,31 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 				get_position_vec2(&v, position, size_type, GLTF_processed_data);
 				//geom->setVertexAttribBinding();
 				geom->setVertexArray(v.get());//coord->geom
-				if(GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE==true)cout << "P_R\n";
+				if(GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE==true)cout << "P_R VEC2\n";
 			}
-			if (GLTF_processed_data->mhs[i].TEXCOORD_0 != -1)if (GLTF_processed_data->acces[GLTF_processed_data->mhs[i].TEXCOORD_0].type[0] == 'V'&&GLTF_processed_data->acces[GLTF_processed_data->mhs[i].TEXCOORD_0].type[1] == 'E'&&GLTF_processed_data->acces[GLTF_processed_data->mhs[i].TEXCOORD_0].type[2] == 'C' && GLTF_processed_data->acces[GLTF_processed_data->mhs[i].TEXCOORD_0].type[3] == '2'){
-				size_type = 2;
-				osg::ref_ptr<osg::Vec2Array> v = new osg::Vec2Array;
-				//	geom->setVertexArray(v.get());
-				get_position_vec2(&v, GLTF_processed_data->mhs[i].TEXCOORD_0, size_type, GLTF_processed_data);
-
-				geom->setTexCoordArray(0, v.get());
-			//	geom->addPrimitiveSet(sideIndices.get());
+					if (GLTF_processed_data->mhs[i].TEXCOORD_0 != -1)if (GLTF_processed_data->acces[GLTF_processed_data->mhs[i].TEXCOORD_0].type[0] == 'V'&&GLTF_processed_data->acces[GLTF_processed_data->mhs[i].TEXCOORD_0].type[1] == 'E'&&GLTF_processed_data->acces[GLTF_processed_data->mhs[i].TEXCOORD_0].type[2] == 'C' && GLTF_processed_data->acces[GLTF_processed_data->mhs[i].TEXCOORD_0].type[3] == '2'){
+						size_type = 2;
+						osg::ref_ptr<osg::Vec2Array> v = new osg::Vec2Array;
+						//	geom->setVertexArray(v.get());
+						get_position_vec2(&v, GLTF_processed_data->mhs[i].TEXCOORD_0, size_type, GLTF_processed_data);
+						geom->setTexCoordArray(0, v.get());
+					//	geom->addPrimitiveSet(sideIndices.get());
 				//geom->setVertexAttribBinding();
 			//	geom->setVertexArray(v.get());//coord->geom
-				if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "P_R\n";
-			}
-			if (GLTF_processed_data->mhs[i].TEXCOORD_1 != -1)if (GLTF_processed_data->acces[GLTF_processed_data->mhs[i].TEXCOORD_1].type[0] == 'V'&&GLTF_processed_data->acces[GLTF_processed_data->mhs[i].TEXCOORD_1].type[1] == 'E'&&GLTF_processed_data->acces[GLTF_processed_data->mhs[i].TEXCOORD_1].type[2] == 'C' && GLTF_processed_data->acces[GLTF_processed_data->mhs[i].TEXCOORD_1].type[3] == '2'){
-				size_type = 2;
-				osg::ref_ptr<osg::Vec2Array> v = new osg::Vec2Array;
-				//	geom->setVertexArray(v.get());
-				get_position_vec2(&v, GLTF_processed_data->mhs[i].TEXCOORD_1, size_type, GLTF_processed_data);
-
-				geom->setTexCoordArray(1, v.get());
-				//	geom->addPrimitiveSet(sideIndices.get());
+						if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "P_R TEXC0 VEC2\n";
+					}
+					if (GLTF_processed_data->mhs[i].TEXCOORD_1 != -1)if (GLTF_processed_data->acces[GLTF_processed_data->mhs[i].TEXCOORD_1].type[0] == 'V'&&GLTF_processed_data->acces[GLTF_processed_data->mhs[i].TEXCOORD_1].type[1] == 'E'&&GLTF_processed_data->acces[GLTF_processed_data->mhs[i].TEXCOORD_1].type[2] == 'C' && GLTF_processed_data->acces[GLTF_processed_data->mhs[i].TEXCOORD_1].type[3] == '2'){
+						size_type = 2;
+						osg::ref_ptr<osg::Vec2Array> v = new osg::Vec2Array;
+						//	geom->setVertexArray(v.get());
+						get_position_vec2(&v, GLTF_processed_data->mhs[i].TEXCOORD_1, size_type, GLTF_processed_data);
+	
+						geom->setTexCoordArray(1, v.get());
+					//	geom->addPrimitiveSet(sideIndices.get());
 				//geom->setVertexAttribBinding();
 				//	geom->setVertexArray(v.get());//coord->geom
-				if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "P_R\n";
-			}
+					if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "P_R TEXC0 VEC2\n";
+					}
 			if (GLTF_processed_data->acces[position].type[0] == 'V'&&GLTF_processed_data->acces[position].type[1] == 'E'&&GLTF_processed_data->acces[position].type[2] == 'C' && GLTF_processed_data->acces[position].type[3] == '3'){
 			size_type = 3;
 			osg::ref_ptr<osg::Vec3Array> v = new osg::Vec3Array;
@@ -2342,8 +2421,7 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 			get_position_vec3(&v, position, size_type, GLTF_processed_data);
 			//geom->setVertexAttribBinding();
 			geom->setVertexArray(v.get());//coord->geom
-			
-			if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "P_R\n";
+			if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "P_R VEC3\n";
 		}
 			if (GLTF_processed_data->acces[position].type[0] == 'V'&&GLTF_processed_data->acces[position].type[1] == 'E'&&GLTF_processed_data->acces[position].type[2] == 'C' && GLTF_processed_data->acces[position].type[3] == '4'){
 			size_type = 4;
@@ -2352,18 +2430,18 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 			get_position_vec4(&v, position, size_type, GLTF_processed_data);
 			//geom->setVertexAttribBinding();
 			geom->setVertexArray(v.get());//coord->geom
-			if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "P_R\n";
+			if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "P_R VEC4\n";
 		}
-		
 			if (GLTF_processed_data->acces[position].type[0] == 'M'&&GLTF_processed_data->acces[position].type[1] == 'A'&&GLTF_processed_data->acces[position].type[2] == 'T' && GLTF_processed_data->acces[position].type[3] == '2')size_type = 4;
 			if (GLTF_processed_data->acces[position].type[0] == 'M'&&GLTF_processed_data->acces[position].type[1] == 'A'&&GLTF_processed_data->acces[position].type[2] == 'T' && GLTF_processed_data->acces[position].type[3] == '3')size_type = 9;
 			if (GLTF_processed_data->acces[position].type[0] == 'M'&&GLTF_processed_data->acces[position].type[1] == 'A'&&GLTF_processed_data->acces[position].type[2] == 'T' && GLTF_processed_data->acces[position].type[3] == '4')size_type = 16;
 		
-		
+		/////////////////////////////////////////////////////////////////////КООРДИНАТЫ КОНЕЦ
+
 		//////////////////////////////////////////////////////////////////////NORMAL INPUT
 			int normal = -1; normal = GLTF_processed_data->mhs[i].NORMAL;
-		if (normal != -1){
-			if (GLTF_processed_data->acces[normal].type[0] == 'S' && GLTF_processed_data->acces[normal].type[1] == 'C'&& GLTF_processed_data->acces[normal].type[2] == 'A'&& GLTF_processed_data->acces[normal].type[3] == 'L'&& GLTF_processed_data->acces[normal].type[4] == 'A'&&GLTF_processed_data->acces[normal].type[5] == 'R')
+		if (normal != -1){//только тип VEC3 https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#meshes
+	/*		if (GLTF_processed_data->acces[normal].type[0] == 'S' && GLTF_processed_data->acces[normal].type[1] == 'C'&& GLTF_processed_data->acces[normal].type[2] == 'A'&& GLTF_processed_data->acces[normal].type[3] == 'L'&& GLTF_processed_data->acces[normal].type[4] == 'A'&&GLTF_processed_data->acces[normal].type[5] == 'R')
 				size_type = 1;
 			if (GLTF_processed_data->acces[normal].type[0] == 'V'&&GLTF_processed_data->acces[normal].type[1] == 'E'&&GLTF_processed_data->acces[normal].type[2] == 'C' && GLTF_processed_data->acces[normal].type[3] == '2')if (GLTF_processed_data->acces[normal].type[0] == 'V'&&GLTF_processed_data->acces[normal].type[1] == 'E'&&GLTF_processed_data->acces[normal].type[2] == 'C' && GLTF_processed_data->acces[normal].type[3] == '4'){
 				size_type = 2;
@@ -2375,6 +2453,7 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 
 				if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "N_R\n";
 			}
+			*/
 			if (GLTF_processed_data->acces[normal].type[0] == 'V'&&GLTF_processed_data->acces[normal].type[1] == 'E'&&GLTF_processed_data->acces[normal].type[2] == 'C' && GLTF_processed_data->acces[normal].type[3] == '3'){
 				size_type = 3;
 				osg::ref_ptr<osg::Vec3Array> n = new osg::Vec3Array;
@@ -2383,10 +2462,9 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 				geom->setNormalArray(n.get());//normal_coord->geom
 				geom->setNormalBinding(osg::Geometry::BIND_PER_VERTEX);
 				
-				if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "N_R\n";
+				if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "N_R VEC3\n";
 			}
-
-			if (GLTF_processed_data->acces[normal].type[0] == 'V'&&GLTF_processed_data->acces[normal].type[1] == 'E'&&GLTF_processed_data->acces[normal].type[2] == 'C' && GLTF_processed_data->acces[normal].type[3] == '4'){
+		/*	if (GLTF_processed_data->acces[normal].type[0] == 'V'&&GLTF_processed_data->acces[normal].type[1] == 'E'&&GLTF_processed_data->acces[normal].type[2] == 'C' && GLTF_processed_data->acces[normal].type[3] == '4'){
 				size_type = 4;
 				osg::ref_ptr<osg::Vec4Array> n = new osg::Vec4Array;
 
@@ -2399,11 +2477,12 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 			if (GLTF_processed_data->acces[normal].type[0] == 'M'&&GLTF_processed_data->acces[normal].type[1] == 'A'&&GLTF_processed_data->acces[normal].type[2] == 'T' && GLTF_processed_data->acces[normal].type[3] == '2')size_type = 4;
 			if (GLTF_processed_data->acces[normal].type[0] == 'M'&&GLTF_processed_data->acces[normal].type[1] == 'A'&&GLTF_processed_data->acces[normal].type[2] == 'T' && GLTF_processed_data->acces[normal].type[3] == '3')size_type = 9;
 			if (GLTF_processed_data->acces[normal].type[0] == 'M'&&GLTF_processed_data->acces[normal].type[1] == 'A'&&GLTF_processed_data->acces[normal].type[2] == 'T' && GLTF_processed_data->acces[normal].type[3] == '4')size_type = 16;
+			*/
 		}
 		//////////////////////////////////////////////////////////////////////INDEX INPUT
 
 		int index = -1; index = GLTF_processed_data->mhs[i].indices;
-		if (index != -1){
+		if (index != -1){//только тип SCALAR https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#reference-primitive
 			if (GLTF_processed_data->acces[index].type[0] == 'S' && GLTF_processed_data->acces[index].type[1] == 'C'&& GLTF_processed_data->acces[index].type[2] == 'A'&& GLTF_processed_data->acces[index].type[3] == 'L'&& GLTF_processed_data->acces[index].type[4] == 'A'&&GLTF_processed_data->acces[index].type[5] == 'R')
 			{
 				size_type = 1;
@@ -2413,95 +2492,18 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 					//geom->drawe
 				if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "SC_R\n";
 			}
+			/*
 			if (GLTF_processed_data->acces[index].type[0] == 'V'&&GLTF_processed_data->acces[index].type[1] == 'E'&&GLTF_processed_data->acces[index].type[2] == 'C' && GLTF_processed_data->acces[index].type[3] == '2')size_type = 2;
 			if (GLTF_processed_data->acces[index].type[0] == 'V'&&GLTF_processed_data->acces[index].type[1] == 'E'&&GLTF_processed_data->acces[index].type[2] == 'C' && GLTF_processed_data->acces[index].type[3] == '3')size_type = 3;
 			if (GLTF_processed_data->acces[index].type[0] == 'V'&&GLTF_processed_data->acces[index].type[1] == 'E'&&GLTF_processed_data->acces[index].type[2] == 'C' && GLTF_processed_data->acces[index].type[3] == '4')size_type = 4;
 			if (GLTF_processed_data->acces[index].type[0] == 'M'&&GLTF_processed_data->acces[index].type[1] == 'A'&&GLTF_processed_data->acces[index].type[2] == 'T' && GLTF_processed_data->acces[index].type[3] == '2')size_type = 4;
 			if (GLTF_processed_data->acces[index].type[0] == 'M'&&GLTF_processed_data->acces[index].type[1] == 'A'&&GLTF_processed_data->acces[index].type[2] == 'T' && GLTF_processed_data->acces[index].type[3] == '3')size_type = 9;
 			if (GLTF_processed_data->acces[index].type[0] == 'M'&&GLTF_processed_data->acces[index].type[1] == 'A'&&GLTF_processed_data->acces[index].type[2] == 'T' && GLTF_processed_data->acces[index].type[3] == '4')size_type = 16;
+			*/
 		}
-		///////////////////////////////////////// Конец связывания
+		//////////////////////////////////////////////////////////////////////INDEX INPUT END
 
-		/////////////////////////////////////////////////SPARE_START!!!
-		if (GLTF_processed_data->acces[position].spare_count != -1){
-		//	GLTF_processed_data->acces[position].type = ""
-			
-			
-			
-
-			//if (GLTF_processed_data->acces[index].type[0] == 'S' && GLTF_processed_data->acces[index].type[1] == 'C'&& GLTF_processed_data->acces[index].type[2] == 'A'&& GLTF_processed_data->acces[index].type[3] == 'L'&& GLTF_processed_data->acces[index].type[4] == 'A'&&GLTF_processed_data->acces[index].type[5] == 'R')
-			//{
-			size_type = 1;
-			//get_position_vec3(&i, position, size_type);
-			vector<unsigned int> spare_i;////
-			get_scalar_for_spare_ind(&spare_i, position, size_type, GLTF_processed_data);
-			//////////////////////////////////////////////////////////////////////////////////////ФИНТ УШАМИ:
-			int temp_spare_count = GLTF_processed_data->acces[position].count;
-			int  temp_spare_byteOffset = GLTF_processed_data->acces[position].byteOffset;
-			int  temp_spare_bufferView = GLTF_processed_data->acces[position].bufferView;
-
-			GLTF_processed_data->acces[position].count = GLTF_processed_data->acces[position].spare_count;
-			GLTF_processed_data->acces[position].byteOffset= GLTF_processed_data->acces[position].spare_values_byteOffset;
-			GLTF_processed_data->acces[position].bufferView = GLTF_processed_data->acces[position].spare_values_buffer_view;
-
-			if (GLTF_processed_data->acces[position].type[0] == 'V'&&GLTF_processed_data->acces[position].type[1] == 'E'&&GLTF_processed_data->acces[position].type[2] == 'C' && GLTF_processed_data->acces[position].type[3] == '2'){
-				size_type = 2;
-				osg::ref_ptr<osg::Vec2Array> v = new osg::Vec2Array;
-				osg::Vec2Array *vertices = (osg::Vec2Array *)(geom->getVertexArray());
-				//	geom->setVertexArray(v.get());
-				get_position_vec2(&v, position, size_type, GLTF_processed_data);
-				for (int chr = 0; chr < spare_i.size(); chr++)
-				{
-					(*vertices)[spare_i[chr]] = (*v)[chr];
-				}
-				//geom->setVertexAttribBinding();
-				//geom->setVertexArray(v.get());//coord->geom
-				if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "P_R\n";
-			}
-			if (GLTF_processed_data->acces[position].type[0] == 'V'&&GLTF_processed_data->acces[position].type[1] == 'E'&&GLTF_processed_data->acces[position].type[2] == 'C' && GLTF_processed_data->acces[position].type[3] == '3'){
-				size_type = 3;
-				osg::ref_ptr<osg::Vec3Array> v = new osg::Vec3Array;
-				osg::Vec3Array *vertices = (osg::Vec3Array *)(geom->getVertexArray());
-				//	geom->setVertexArray(v.get());
-				get_position_vec3(&v, position, size_type, GLTF_processed_data);
-				for (int chr = 0; chr < spare_i.size(); chr++)
-				{
-					//osg::Vec3 lf = (*v)[chr];
-					//cout<<v[0][0][chr];
-			//		osg::Vec3 vector3_for_s = *v
-					(*vertices)[spare_i[chr]] = (*v)[chr];
-					//v[0]->asVector();
-				//	 = v[chr];
-				}
-				//osg::Vec3 vec3tor = (*vertices)[0];
-				//geom->setVertexAttribBinding();
-			//	geom->setVertexArray(v.get());//coord->geom
-
-				if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "P_R\n";
-			}
-			if (GLTF_processed_data->acces[position].type[0] == 'V'&&GLTF_processed_data->acces[position].type[1] == 'E'&&GLTF_processed_data->acces[position].type[2] == 'C' && GLTF_processed_data->acces[position].type[3] == '4'){
-				size_type = 4;
-				osg::ref_ptr<osg::Vec4Array> v = new osg::Vec4Array;
-				osg::Vec4Array *vertices = (osg::Vec4Array *)(geom->getVertexArray());
-				//	geom->setVertexArray(v.get());
-				get_position_vec4(&v, position, size_type, GLTF_processed_data);
-				for (int chr = 0; chr < spare_i.size(); chr++)
-				{
-					(*vertices)[spare_i[chr]] = (*v)[chr];
-				}
-
-				//geom->setVertexAttribBinding();
-			//	geom->setVertexArray(v.get());//coord->geom
-				if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "P_R\n";
-			}
-
-
-			/////////////////////////////////////////////////////////////////////////////////////КОНЕЦ ФИНТА УШАМИ
-			if (GLTF_processed_data->DEBAG_INFORMATION_ON_CONSOLE == true)cout << "SC_R_SPARE\n";
-			GLTF_processed_data->acces[position].count = temp_spare_count;
-			GLTF_processed_data->acces[position].byteOffset = temp_spare_byteOffset;
-			GLTF_processed_data->acces[position].bufferView = temp_spare_bufferView;}
-		////////////////////////////////////////////////////SPARE_END
+		add_groups_to_root_spare(group, GLTF_processed_data,&geom,position);//SPARE именно в таком порядке вызова(после индексов)
 
 		////////////////////////////////////////////////////////////////////MATERIALS INPUT
 		int material_choose = -1; material_choose = GLTF_processed_data->mhs[i].material;
@@ -2571,40 +2573,62 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 				
 			//	state->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::PROTECTED);
 			//	state->setRenderingHint(osg::StateSet::USE_RENDERBIN_DETAILS);
-
 				//tex->setUnRefImageDataAfterApply(true);
-				//state->setTextureAttributeAndModes(0, tex);
-				
+				//state->setTextureAttributeAndModes(0, tex);		
 				//state->setTextureMode(0);
 			//	state->setTextureMode(0, GL_TEXTURE_WRAP_T, osg::StateAttribute::GL_REPEAT);
 				// Повторять текстуру по оси s
 				//tex->setImage(new osg::Image())
-				if (GLTF_processed_data->texture.size() != 0)
+				if (GLTF_processed_data->texture.size() != 0)if (GLTF_processed_data->texture.size() >i)
 				{
 					tex->setImage(GLTF_processed_data->image[GLTF_processed_data->texture[i].source].image.get());
 					//state->setTextureMode(0, GL_TEXTURE_GEN_S, osg::StateAttribute::ON);
 					//	mhs[i].mh->getOrCreateStateSet()->setTextureAttributesAndModes(0, GL_TEXTURE_GEN_Q)
 					if (GLTF_processed_data->sampler.size() != 0){
-						switch (GLTF_processed_data->sampler[GLTF_processed_data->texture[i].sampler].wrapS)
+							switch (GLTF_processed_data->sampler[GLTF_processed_data->texture[i].sampler].wrapS)
 						{
 						case 10497:
 							tex->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT); break;
+						case 33071 :
+							tex->setWrap(osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE); break;
 						case 33648:
-							tex->setWrap(osg::Texture::WRAP_S, osg::Texture::MIRROR);
-							break;
+							tex->setWrap(osg::Texture::WRAP_S, osg::Texture::MIRROR); break;
 						default:
 							tex->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT); break;
 						}
-						switch (GLTF_processed_data->sampler[GLTF_processed_data->texture[i].sampler].wrapT)
+							switch (GLTF_processed_data->sampler[GLTF_processed_data->texture[i].sampler].wrapT)
 						{
 						case 10497:
 							tex->setWrap(osg::Texture::WRAP_T, osg::Texture::REPEAT); break;
 						case 33648:
-							tex->setWrap(osg::Texture::WRAP_T, osg::Texture::MIRROR);
-							break;
+							tex->setWrap(osg::Texture::WRAP_T, osg::Texture::MIRROR); break;
+						case 33071:
+							tex->setWrap(osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE); break;
 						default:
 							tex->setWrap(osg::Texture::WRAP_T, osg::Texture::REPEAT); break;
 						}
+							switch (GLTF_processed_data->sampler[GLTF_processed_data->texture[i].sampler].magFilter)
+							{
+							case 9728:
+								tex->setFilter(osg::Texture::MAG_FILTER, osg::Texture::NEAREST); break;
+							case 9729 :
+								tex->setFilter(osg::Texture::MAG_FILTER, osg::Texture::LINEAR);	break;
+							}
+							switch (GLTF_processed_data->sampler[GLTF_processed_data->texture[i].sampler].minFilter)
+							{
+							case 9728:
+								tex->setFilter(osg::Texture::MIN_FILTER, osg::Texture::NEAREST); break;
+							case 9729:
+								tex->setFilter(osg::Texture::MIN_FILTER, osg::Texture::LINEAR);	break;
+							case 9984:
+								tex->setFilter(osg::Texture::MIN_FILTER, osg::Texture::NEAREST_MIPMAP_NEAREST); break;
+							case 9985:
+								tex->setFilter(osg::Texture::MIN_FILTER, osg::Texture::LINEAR_MIPMAP_NEAREST); break;
+							case 9986:
+								tex->setFilter(osg::Texture::MIN_FILTER, osg::Texture::NEAREST_MIPMAP_LINEAR); break;
+							case 9987:
+								tex->setFilter(osg::Texture::MIN_FILTER, osg::Texture::LINEAR_MIPMAP_LINEAR); break;
+							}
 					}
 					
 				}
@@ -2666,7 +2690,6 @@ void add_groups_to_root(osg::ref_ptr<osg::Group>* group, Processed_data_gltf* GL
 	//	geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINES,0, acces[mhs[i].POSITION].count));
 		// Добавить Geometry (Drawable) в Geode и вернуть Geode.
 		//osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-		
 	//	cout << vertices->asVector;
 	//	vertices[0]
 	//	vertices->mixin
